@@ -3,23 +3,34 @@ import * as THREE from "three";
 import { onMounted, onUnmounted, ref } from "vue";
 
 const container = ref<HTMLDivElement | null>(null);
+const scrollContainer = ref<HTMLDivElement | null>(null);
 let pole: THREE.Mesh | null = null;
+let renderer: THREE.WebGLRenderer | null = null;
+let scene: THREE.Scene | null = null;
 
 const handleScroll = () => {
-  if (pole) {
-    const scrollY = window.scrollY;
+  if (pole && scrollContainer.value) {
+    const scrollY = scrollContainer.value.scrollTop;
     pole.rotation.y = scrollY * 0.005; // Adjust rotation sensitivity
   }
 };
 
+const onWindowResize = () => {
+  if (renderer) {
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  }
+};
+
 onMounted(() => {
-  if (!container.value) {
+  if (!container.value || !scrollContainer.value) {
     console.error("Container not found!");
     return;
   }
 
   // Scene setup
-  const scene = new THREE.Scene();
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x000000); // Set background to black
+
   const camera = new THREE.PerspectiveCamera(
     45,
     window.innerWidth / window.innerHeight,
@@ -29,8 +40,9 @@ onMounted(() => {
   camera.position.set(0, 0, 10); // Move the camera further back
   camera.lookAt(0, 0, 0);
 
-  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(window.devicePixelRatio);
   container.value.appendChild(renderer.domElement);
 
   // Load textures
@@ -92,22 +104,59 @@ onMounted(() => {
   animate();
 
   // Scroll listener
-  window.addEventListener("scroll", handleScroll);
+  scrollContainer.value.addEventListener("scroll", handleScroll, {
+    passive: true,
+  });
 });
 
 onUnmounted(() => {
-  window.removeEventListener("scroll", handleScroll);
+  if (scrollContainer.value) {
+    scrollContainer.value.removeEventListener("scroll", handleScroll);
+  }
+  window.removeEventListener("resize", onWindowResize);
 });
 </script>
 
 <template>
+  <div ref="scrollContainer" class="scroll-container">
+    <div class="scroll-content"></div>
+  </div>
   <div ref="container" class="scene-container"></div>
 </template>
 
 <style>
-.scene-container {
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background-color: black;
+  overflow: hidden;
+}
+
+.scroll-container {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100vw;
   height: 100vh;
-  overflow: hidden;
+  overflow-y: scroll;
+  z-index: 2;
+  opacity: 0;
+}
+
+.scroll-content {
+  height: 3000px; /* Creates enough space to scroll */
+}
+
+.scene-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: black;
+  z-index: 1;
 }
 </style>
