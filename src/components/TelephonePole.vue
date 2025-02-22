@@ -36,12 +36,16 @@ onMounted(() => {
   // Load textures
   const textureLoader = new THREE.TextureLoader();
   textureLoader.setCrossOrigin("anonymous"); // Handle CORS issues
+
   const woodTexture = textureLoader.load(
     "/assets/wood-texture.jpg",
     () => console.log("Wood texture loaded successfully"),
     undefined,
     (error) => console.error("Error loading wood texture:", error)
   );
+  woodTexture.wrapS = THREE.RepeatWrapping;
+  woodTexture.wrapT = THREE.RepeatWrapping;
+  woodTexture.repeat.set(1, 3); // Adjust scaling to make it look natural
 
   const flyerTexture = textureLoader.load(
     "/assets/flyer.png",
@@ -52,24 +56,23 @@ onMounted(() => {
 
   // Create the telephone pole with wood texture
   const poleGeometry = new THREE.CylinderGeometry(1, 1, 5, 64);
-  const poleMaterial = new THREE.MeshPhysicalMaterial({
+  const poleMaterial = new THREE.MeshStandardMaterial({
     map: woodTexture,
-    roughness: 0.7,
-    metalness: 0.1,
-    clearcoat: 0.3,
+    roughness: 0.8,
+    metalness: 0.0,
   });
   pole = new THREE.Mesh(poleGeometry, poleMaterial);
   scene.add(pole);
 
-  // Create the flyer as a plane attached to the pole
+  // Create the flyer as a plane facing forward
   const flyerGeometry = new THREE.PlaneGeometry(1.5, 2);
   const flyerMaterial = new THREE.MeshBasicMaterial({
     map: flyerTexture,
     transparent: true, // Allow transparency if the flyer has transparent parts
   });
   const flyer = new THREE.Mesh(flyerGeometry, flyerMaterial);
-  flyer.position.set(1, 0, 0.9); // Adjust position to be on the side of the pole
-  flyer.rotation.y = -Math.PI / 2; // Orient towards the viewer
+  flyer.position.set(0, 0, 1.05); // Ensure flyer is just above the pole's surface
+  flyer.rotation.y = 0; // Make sure the flyer is perfectly facing the camera
   scene.add(flyer);
 
   // Lighting adjustments
