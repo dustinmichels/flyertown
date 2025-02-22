@@ -1,91 +1,110 @@
 <script setup lang="ts">
 import * as THREE from "three";
-import { onMounted, ref } from "vue";
+import { onMounted, onUnmounted, ref } from "vue";
 
 const container = ref<HTMLDivElement | null>(null);
+let pole: THREE.Mesh | null = null;
+
+const handleScroll = () => {
+  if (pole) {
+    const scrollY = window.scrollY;
+    pole.rotation.y = scrollY * 0.005; // Adjust rotation sensitivity
+  }
+};
 
 onMounted(() => {
-  if (!container.value) return;
+  if (!container.value) {
+    console.error("Container not found!");
+    return;
+  }
 
   // Scene setup
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
-  camera.position.set(0, 0, 5);
+  const camera = new THREE.PerspectiveCamera(
+    45,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    100
+  );
+  camera.position.set(0, 0, 10); // Move the camera further back
+  camera.lookAt(0, 0, 0);
 
   const renderer = new THREE.WebGLRenderer({ antialias: true });
-  renderer.setSize(container.value.clientWidth, container.value.clientHeight);
+  renderer.setSize(window.innerWidth, window.innerHeight);
   container.value.appendChild(renderer.domElement);
 
-  // Create a cylinder (telephone pole)
-  const geometry = new THREE.CylinderGeometry(1, 1, 5, 32);
-  const material = new THREE.MeshStandardMaterial({ color: "brown" });
-  const pole = new THREE.Mesh(geometry, material);
+  // Load textures
+  const textureLoader = new THREE.TextureLoader();
+  textureLoader.setCrossOrigin("anonymous"); // Handle CORS issues
+  const woodTexture = textureLoader.load(
+    "/assets/wood-texture.jpg",
+    () => console.log("Wood texture loaded successfully"),
+    undefined,
+    (error) => console.error("Error loading wood texture:", error)
+  );
+
+  const flyerTexture = textureLoader.load(
+    "/assets/flyer.png",
+    () => console.log("Flyer texture loaded successfully"),
+    undefined,
+    (error) => console.error("Error loading flyer texture:", error)
+  );
+
+  // Create the telephone pole with wood texture
+  const poleGeometry = new THREE.CylinderGeometry(1, 1, 5, 64);
+  const poleMaterial = new THREE.MeshPhysicalMaterial({
+    map: woodTexture,
+    roughness: 0.7,
+    metalness: 0.1,
+    clearcoat: 0.3,
+  });
+  pole = new THREE.Mesh(poleGeometry, poleMaterial);
   scene.add(pole);
 
-  // Add some lighting
-  const light = new THREE.PointLight(0xffffff, 1);
-  light.position.set(5, 5, 5);
-  scene.add(light);
+  // Create the flyer as a plane attached to the pole
+  const flyerGeometry = new THREE.PlaneGeometry(1.5, 2);
+  const flyerMaterial = new THREE.MeshBasicMaterial({
+    map: flyerTexture,
+    transparent: true, // Allow transparency if the flyer has transparent parts
+  });
+  const flyer = new THREE.Mesh(flyerGeometry, flyerMaterial);
+  flyer.position.set(1, 0, 0.9); // Adjust position to be on the side of the pole
+  flyer.rotation.y = -Math.PI / 2; // Orient towards the viewer
+  scene.add(flyer);
 
-  // Add flyers (simple plane meshes)
-  const flyerTexture = new THREE.TextureLoader().load("/flyer.jpg");
-  const flyerMaterial = new THREE.MeshBasicMaterial({ map: flyerTexture });
-  for (let i = 0; i < 6; i++) {
-    const flyer = new THREE.Mesh(
-      new THREE.PlaneGeometry(1, 1.5),
-      flyerMaterial
-    );
-    const angle = (i / 6) * Math.PI * 2;
-    flyer.position.set(
-      Math.cos(angle) * 1.2,
-      Math.random() * 2 - 1,
-      Math.sin(angle) * 1.2
-    );
-    flyer.lookAt(new THREE.Vector3(0, flyer.position.y, 0)); // Face the camera
-    pole.add(flyer);
-  }
-
-  // Rotation logic
-  let isDragging = false;
-  let prevX = 0;
-
-  const onMouseDown = (event: MouseEvent) => {
-    isDragging = true;
-    prevX = event.clientX;
-  };
-
-  const onMouseMove = (event: MouseEvent) => {
-    if (!isDragging) return;
-    const deltaX = (event.clientX - prevX) * 0.01;
-    pole.rotation.y += deltaX;
-    prevX = event.clientX;
-  };
-
-  const onMouseUp = () => {
-    isDragging = false;
-  };
-
-  container.value.addEventListener("mousedown", onMouseDown);
-  container.value.addEventListener("mousemove", onMouseMove);
-  container.value.addEventListener("mouseup", onMouseUp);
+  // Lighting adjustments
+  const ambientLight = new THREE.AmbientLight(0xffffff, 2); // Increase intensity
+  scene.add(ambientLight);
+  const pointLight = new THREE.PointLight(0xffffff, 2, 20);
+  pointLight.position.set(10, 10, 10);
+  scene.add(pointLight);
 
   // Animation loop
   const animate = () => {
     requestAnimationFrame(animate);
-    renderer.render(scene, camera);
+    if (renderer && scene && camera) {
+      renderer.render(scene, camera);
+    }
   };
   animate();
+
+  // Scroll listener
+  window.addEventListener("scroll", handleScroll);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("scroll", handleScroll);
 });
 </script>
 
 <template>
-  <div ref="container" class="three-container"></div>
+  <div ref="container" class="scene-container"></div>
 </template>
 
-<style scoped>
-.three-container {
+<style>
+.scene-container {
   width: 100vw;
   height: 100vh;
-  touch-action: none;
+  overflow: hidden;
 }
 </style>
