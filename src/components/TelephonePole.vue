@@ -7,11 +7,14 @@ const scrollContainer = ref<HTMLDivElement | null>(null);
 let pole: THREE.Mesh | null = null;
 let renderer: THREE.WebGLRenderer | null = null;
 let scene: THREE.Scene | null = null;
+let flyer: THREE.Mesh | null = null; // Added flyer as a tracked object
 
 const handleScroll = () => {
-  if (pole && scrollContainer.value) {
+  if (pole && flyer && scrollContainer.value) {
     const scrollY = scrollContainer.value.scrollTop;
-    pole.rotation.y = scrollY * 0.005; // Adjust rotation sensitivity
+    const rotation = scrollY * 0.005;
+    pole.rotation.y = rotation;
+    flyer.rotation.y = rotation; // Sync flyer rotation with pole
   }
 };
 
@@ -29,7 +32,7 @@ onMounted(() => {
 
   // Scene setup
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x000000); // Set background to black
+  scene.background = new THREE.Color(0x000000);
 
   const camera = new THREE.PerspectiveCamera(
     45,
@@ -37,7 +40,7 @@ onMounted(() => {
     0.1,
     100
   );
-  camera.position.set(0, 0, 10); // Move the camera further back
+  camera.position.set(0, 0, 10);
   camera.lookAt(0, 0, 0);
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -47,7 +50,7 @@ onMounted(() => {
 
   // Load textures
   const textureLoader = new THREE.TextureLoader();
-  textureLoader.setCrossOrigin("anonymous"); // Handle CORS issues
+  textureLoader.setCrossOrigin("anonymous");
 
   const woodTexture = textureLoader.load(
     "/assets/wood-texture.jpg",
@@ -57,7 +60,7 @@ onMounted(() => {
   );
   woodTexture.wrapS = THREE.RepeatWrapping;
   woodTexture.wrapT = THREE.RepeatWrapping;
-  woodTexture.repeat.set(1, 3); // Adjust scaling to make it look natural
+  woodTexture.repeat.set(1, 3);
 
   const flyerTexture = textureLoader.load(
     "/assets/flyer.png",
@@ -76,19 +79,28 @@ onMounted(() => {
   pole = new THREE.Mesh(poleGeometry, poleMaterial);
   scene.add(pole);
 
-  // Create the flyer as a plane facing forward
-  const flyerGeometry = new THREE.PlaneGeometry(1.5, 2);
+  // Create the flyer as a curved surface wrapping around the pole
+  const flyerGeometry = new THREE.CylinderGeometry(
+    1.05, // Slightly larger radius than the pole
+    1.05,
+    2, // Height of the flyer
+    32, // Segments around cylinder
+    1, // Height segments
+    true, // Open-ended cylinder
+    0, // Start angle
+    Math.PI / 2 // End angle (90 degrees around the pole)
+  );
   const flyerMaterial = new THREE.MeshBasicMaterial({
     map: flyerTexture,
-    transparent: true, // Allow transparency if the flyer has transparent parts
+    transparent: true,
+    side: THREE.DoubleSide, // Show both sides of the geometry
   });
-  const flyer = new THREE.Mesh(flyerGeometry, flyerMaterial);
-  flyer.position.set(0, 0, 1.05); // Ensure flyer is just above the pole's surface
-  flyer.rotation.y = 0; // Make sure the flyer is perfectly facing the camera
+  flyer = new THREE.Mesh(flyerGeometry, flyerMaterial);
+  flyer.position.set(0, 0, 0); // Center with pole
   scene.add(flyer);
 
   // Lighting adjustments
-  const ambientLight = new THREE.AmbientLight(0xffffff, 2); // Increase intensity
+  const ambientLight = new THREE.AmbientLight(0xffffff, 2);
   scene.add(ambientLight);
   const pointLight = new THREE.PointLight(0xffffff, 2, 20);
   pointLight.position.set(10, 10, 10);
