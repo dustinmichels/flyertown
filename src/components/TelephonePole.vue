@@ -1,40 +1,46 @@
 <script setup lang="ts">
 import * as THREE from "three";
-import { onMounted, onUnmounted, ref } from "vue";
+import { onUnmounted, ref, watchEffect } from "vue";
 
 const container = ref<HTMLDivElement | null>(null);
 const scrollContainer = ref<HTMLDivElement | null>(null);
 let pole: THREE.Mesh | null = null;
 let renderer: THREE.WebGLRenderer | null = null;
 let scene: THREE.Scene | null = null;
-let flyer: THREE.Mesh | null = null; // Added flyer as a tracked object
+let camera: THREE.PerspectiveCamera | null = null;
+let flyer1: THREE.Mesh | null = null;
+let flyer2: THREE.Mesh | null = null;
 
 const handleScroll = () => {
-  if (pole && flyer && scrollContainer.value) {
+  if (pole && flyer1 && flyer2 && scrollContainer.value) {
     const scrollY = scrollContainer.value.scrollTop;
     const rotation = scrollY * 0.005;
     pole.rotation.y = rotation;
-    flyer.rotation.y = rotation; // Sync flyer rotation with pole
+    flyer1.rotation.y = rotation;
+    flyer2.rotation.y = rotation;
   }
 };
 
 const onWindowResize = () => {
-  if (renderer) {
+  if (renderer && camera) {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
   }
 };
 
-onMounted(() => {
-  if (!container.value || !scrollContainer.value) {
-    console.error("Container not found!");
-    return;
-  }
+// 🟢 Wait for container to exist before setting up Three.js
+watchEffect(() => {
+  if (!container.value || !scrollContainer.value) return; // Wait for Vue refs
+
+  console.log("✅ Three.js Initializing...");
 
   // Scene setup
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x000000);
+  scene.background = new THREE.Color(0x222222);
 
-  const camera = new THREE.PerspectiveCamera(
+  // Camera
+  camera = new THREE.PerspectiveCamera(
     45,
     window.innerWidth / window.innerHeight,
     0.1,
@@ -43,33 +49,46 @@ onMounted(() => {
   camera.position.set(0, 0, 10);
   camera.lookAt(0, 0, 0);
 
+  // Renderer
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(window.devicePixelRatio);
-  container.value.appendChild(renderer.domElement);
 
-  // Load textures
+  if (container.value) {
+    container.value.appendChild(renderer.domElement);
+  } else {
+    console.error("❌ Renderer container not found!");
+    return;
+  }
+
+  console.log("✅ Scene, Camera, and Renderer Initialized");
+
+  // Load textures properly
   const textureLoader = new THREE.TextureLoader();
   textureLoader.setCrossOrigin("anonymous");
 
   const woodTexture = textureLoader.load(
     "/assets/wood-texture.jpg",
-    () => console.log("Wood texture loaded successfully"),
+    () => console.log("✅ Wood texture loaded"),
     undefined,
-    (error) => console.error("Error loading wood texture:", error)
-  );
-  woodTexture.wrapS = THREE.RepeatWrapping;
-  woodTexture.wrapT = THREE.RepeatWrapping;
-  woodTexture.repeat.set(1, 3);
-
-  const flyerTexture = textureLoader.load(
-    "/assets/flyer.png",
-    () => console.log("Flyer texture loaded successfully"),
-    undefined,
-    (error) => console.error("Error loading flyer texture:", error)
+    (error) => console.error("❌ Error loading wood texture:", error)
   );
 
-  // Create the telephone pole with wood texture
+  const flyer1Texture = textureLoader.load(
+    "/assets/flyer1.png",
+    () => console.log("✅ Flyer 1 texture loaded"),
+    undefined,
+    (error) => console.error("❌ Error loading flyer 1 texture:", error)
+  );
+
+  const flyer2Texture = textureLoader.load(
+    "/assets/flyer2.jpg",
+    () => console.log("✅ Flyer 2 texture loaded"),
+    undefined,
+    (error) => console.error("❌ Error loading flyer 2 texture:", error)
+  );
+
+  // Create the telephone pole
   const poleGeometry = new THREE.CylinderGeometry(1, 1, 5, 64);
   const poleMaterial = new THREE.MeshStandardMaterial({
     map: woodTexture,
@@ -79,46 +98,69 @@ onMounted(() => {
   pole = new THREE.Mesh(poleGeometry, poleMaterial);
   scene.add(pole);
 
-  // Create the flyer as a curved surface wrapping around the pole
+  // Create flyer geometry
   const flyerGeometry = new THREE.CylinderGeometry(
     1.05, // Slightly larger radius than the pole
     1.05,
-    2, // Height of the flyer
-    32, // Segments around cylinder
-    1, // Height segments
-    true, // Open-ended cylinder
-    0, // Start angle
-    Math.PI / 2 // End angle (90 degrees around the pole)
+    2, // Flyer height
+    32,
+    1,
+    true,
+    0,
+    Math.PI / 2 // Wraps 90 degrees around the pole
   );
-  const flyerMaterial = new THREE.MeshBasicMaterial({
-    map: flyerTexture,
-    transparent: true,
-    side: THREE.DoubleSide, // Show both sides of the geometry
-  });
-  flyer = new THREE.Mesh(flyerGeometry, flyerMaterial);
-  flyer.position.set(0, 0, 0); // Center with pole
-  scene.add(flyer);
 
-  // Lighting adjustments
+  // First flyer
+  const flyerMaterial1 = new THREE.MeshBasicMaterial({
+    map: flyer1Texture,
+    transparent: true,
+    side: THREE.DoubleSide,
+  });
+  flyer1 = new THREE.Mesh(flyerGeometry, flyerMaterial1);
+  flyer1.position.set(0, 0, 0);
+  scene.add(flyer1);
+
+  // Second flyer
+  const flyerMaterial2 = new THREE.MeshBasicMaterial({
+    map: flyer2Texture,
+    transparent: true,
+    side: THREE.DoubleSide,
+  });
+  flyer2 = new THREE.Mesh(flyerGeometry, flyerMaterial2);
+  flyer2.position.set(0, -1, 0);
+  flyer2.rotation.y = Math.PI;
+  scene.add(flyer2);
+
+  console.log("✅ Flyers added to scene");
+
+  // Lights
   const ambientLight = new THREE.AmbientLight(0xffffff, 2);
   scene.add(ambientLight);
   const pointLight = new THREE.PointLight(0xffffff, 2, 20);
   pointLight.position.set(10, 10, 10);
   scene.add(pointLight);
 
+  console.log("✅ Lights added");
+
   // Animation loop
   const animate = () => {
     requestAnimationFrame(animate);
     if (renderer && scene && camera) {
       renderer.render(scene, camera);
+    } else {
+      console.error("❌ Renderer or Camera missing in animation loop!");
     }
   };
   animate();
+
+  console.log("✅ Animation started");
 
   // Scroll listener
   scrollContainer.value.addEventListener("scroll", handleScroll, {
     passive: true,
   });
+
+  window.addEventListener("resize", onWindowResize);
 });
 
 onUnmounted(() => {
