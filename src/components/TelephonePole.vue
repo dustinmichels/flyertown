@@ -87,7 +87,7 @@ watchEffect(() => {
   );
 
   // Create the telephone pole
-  const poleGeometry = new THREE.CylinderGeometry(1, 1, 5, 64);
+  const poleGeometry = new THREE.CylinderGeometry(1, 1, 7, 64); // Height changed to 8
   const poleMaterial = new THREE.MeshStandardMaterial({
     map: woodTexture,
     roughness: 0.8,
