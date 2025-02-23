@@ -12,12 +12,10 @@ let flyer1: THREE.Mesh | null = null;
 let flyer2: THREE.Mesh | null = null;
 
 const handleScroll = () => {
-  if (pole && flyer1 && flyer2 && scrollContainer.value) {
+  if (pole && scrollContainer.value) {
     const scrollY = scrollContainer.value.scrollTop;
     const rotation = scrollY * 0.005;
     pole.rotation.y = rotation;
-    flyer1.rotation.y = rotation;
-    flyer2.rotation.y = rotation;
   }
 };
 
@@ -29,9 +27,9 @@ const onWindowResize = () => {
   }
 };
 
-// 🟢 Wait for container to exist before setting up Three.js
+// Wait for container to exist before setting up Three.js
 watchEffect(() => {
-  if (!container.value || !scrollContainer.value) return; // Wait for Vue refs
+  if (!container.value || !scrollContainer.value) return;
 
   console.log("✅ Three.js Initializing...");
 
@@ -39,17 +37,17 @@ watchEffect(() => {
   scene = new THREE.Scene();
   scene.background = new THREE.Color(0x222222);
 
-  // Camera
+  // Camera setup
   camera = new THREE.PerspectiveCamera(
     45,
     window.innerWidth / window.innerHeight,
     0.1,
     100
   );
-  camera.position.set(0, 0, 10);
+  camera.position.set(0, 2, 10);
   camera.lookAt(0, 0, 0);
 
-  // Renderer
+  // Renderer setup
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(window.devicePixelRatio);
@@ -63,7 +61,7 @@ watchEffect(() => {
 
   console.log("✅ Scene, Camera, and Renderer Initialized");
 
-  // Load textures properly
+  // Load textures
   const textureLoader = new THREE.TextureLoader();
   textureLoader.setCrossOrigin("anonymous");
 
@@ -98,11 +96,11 @@ watchEffect(() => {
   pole = new THREE.Mesh(poleGeometry, poleMaterial);
   scene.add(pole);
 
-  // Create flyer geometry
+  // Create flyer geometry (slightly above pole surface)
   const flyerGeometry = new THREE.CylinderGeometry(
-    1.05, // Slightly larger radius than the pole
-    1.05,
-    2, // Flyer height
+    1.06, // Slightly larger radius than the pole
+    1.06,
+    1.5, // Flyer height
     32,
     1,
     true,
@@ -117,10 +115,10 @@ watchEffect(() => {
     side: THREE.DoubleSide,
   });
   flyer1 = new THREE.Mesh(flyerGeometry, flyerMaterial1);
-  flyer1.position.set(0, 0, 0);
-  scene.add(flyer1);
+  flyer1.position.set(0, 1, 0);
+  pole.add(flyer1); // Attach to pole
 
-  // Second flyer
+  // Second flyer (opposite side)
   const flyerMaterial2 = new THREE.MeshBasicMaterial({
     map: flyer2Texture,
     transparent: true,
@@ -128,16 +126,16 @@ watchEffect(() => {
   });
   flyer2 = new THREE.Mesh(flyerGeometry, flyerMaterial2);
   flyer2.position.set(0, -1, 0);
-  flyer2.rotation.y = Math.PI;
-  scene.add(flyer2);
+  flyer2.rotation.y = Math.PI; // Flip to opposite side
+  pole.add(flyer2); // Attach to pole
 
-  console.log("✅ Flyers added to scene");
+  console.log("✅ Flyers added to pole");
 
   // Lights
-  const ambientLight = new THREE.AmbientLight(0xffffff, 2);
+  const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
   scene.add(ambientLight);
   const pointLight = new THREE.PointLight(0xffffff, 2, 20);
-  pointLight.position.set(10, 10, 10);
+  pointLight.position.set(5, 5, 5);
   scene.add(pointLight);
 
   console.log("✅ Lights added");
