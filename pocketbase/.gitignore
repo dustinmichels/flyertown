@@ -1,0 +1,13 @@
+# binary
+pocketbase
+
+# 🚀 Ignore auto-generated database & storage files
+pb_data/
+pb_public/
+
+# 🚀 Ignore build files (if you compile PocketBase)
+pb_build/
+
+# 🚀 Ignore logs & temp files
+*.log
+tmp/
