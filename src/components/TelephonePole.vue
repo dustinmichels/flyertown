@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import * as THREE from "three";
 import { onUnmounted, ref, watchEffect } from "vue";
+import Flyer from "./Flyer.vue"; // Import the Flyer component
 
 const container = ref<HTMLDivElement | null>(null);
 const scrollContainer = ref<HTMLDivElement | null>(null);
@@ -8,8 +9,7 @@ let pole: THREE.Mesh | null = null;
 let renderer: THREE.WebGLRenderer | null = null;
 let scene: THREE.Scene | null = null;
 let camera: THREE.PerspectiveCamera | null = null;
-let flyer1: THREE.Mesh | null = null;
-let flyer2: THREE.Mesh | null = null;
+const flyerQueue: THREE.Mesh[] = []; // Store flyers temporarily if pole isn't ready
 
 const handleScroll = () => {
   if (pole && scrollContainer.value) {
@@ -27,7 +27,30 @@ const onWindowResize = () => {
   }
 };
 
-// Wait for container to exist before setting up Three.js
+// Ensure queued flyers are added once the pole is ready
+const addQueuedFlyers = () => {
+  if (!pole) return;
+  while (flyerQueue.length > 0) {
+    const flyer = flyerQueue.shift();
+    if (flyer) {
+      pole.add(flyer);
+      console.log("✅ Flyer added from queue:", flyer);
+    }
+  }
+};
+
+// Function to handle adding flyers
+const addFlyerToPole = (flyer: THREE.Mesh) => {
+  if (pole) {
+    pole.add(flyer);
+    console.log("✅ Flyer added to the pole:", flyer);
+  } else {
+    console.warn("⚠️ Pole not found yet. Adding flyer to queue.");
+    flyerQueue.push(flyer); // Store flyer temporarily
+  }
+};
+
+// Watch for Vue refs and setup Three.js scene
 watchEffect(() => {
   if (!container.value || !scrollContainer.value) return;
 
@@ -72,22 +95,8 @@ watchEffect(() => {
     (error) => console.error("❌ Error loading wood texture:", error)
   );
 
-  const flyer1Texture = textureLoader.load(
-    "/assets/flyer1.png",
-    () => console.log("✅ Flyer 1 texture loaded"),
-    undefined,
-    (error) => console.error("❌ Error loading flyer 1 texture:", error)
-  );
-
-  const flyer2Texture = textureLoader.load(
-    "/assets/flyer2.jpg",
-    () => console.log("✅ Flyer 2 texture loaded"),
-    undefined,
-    (error) => console.error("❌ Error loading flyer 2 texture:", error)
-  );
-
   // Create the telephone pole
-  const poleGeometry = new THREE.CylinderGeometry(1, 1, 7, 64); // Height changed to 8
+  const poleGeometry = new THREE.CylinderGeometry(1, 1, 7, 64);
   const poleMaterial = new THREE.MeshStandardMaterial({
     map: woodTexture,
     roughness: 0.8,
@@ -96,40 +105,10 @@ watchEffect(() => {
   pole = new THREE.Mesh(poleGeometry, poleMaterial);
   scene.add(pole);
 
-  // Create flyer geometry (slightly above pole surface)
-  const flyerGeometry = new THREE.CylinderGeometry(
-    1.06, // Slightly larger radius than the pole
-    1.06,
-    1.5, // Flyer height
-    32,
-    1,
-    true,
-    0,
-    Math.PI / 2 // Wraps 90 degrees around the pole
-  );
+  console.log("✅ Pole created");
 
-  // First flyer
-  const flyerMaterial1 = new THREE.MeshBasicMaterial({
-    map: flyer1Texture,
-    transparent: true,
-    side: THREE.DoubleSide,
-  });
-  flyer1 = new THREE.Mesh(flyerGeometry, flyerMaterial1);
-  flyer1.position.set(0, 1, 0);
-  pole.add(flyer1); // Attach to pole
-
-  // Second flyer (opposite side)
-  const flyerMaterial2 = new THREE.MeshBasicMaterial({
-    map: flyer2Texture,
-    transparent: true,
-    side: THREE.DoubleSide,
-  });
-  flyer2 = new THREE.Mesh(flyerGeometry, flyerMaterial2);
-  flyer2.position.set(0, -1, 0);
-  flyer2.rotation.y = Math.PI; // Flip to opposite side
-  pole.add(flyer2); // Attach to pole
-
-  console.log("✅ Flyers added to pole");
+  // Now that pole is ready, add any queued flyers
+  addQueuedFlyers();
 
   // Lights
   const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
@@ -174,6 +153,31 @@ onUnmounted(() => {
     <div class="scroll-content"></div>
   </div>
   <div ref="container" class="scene-container"></div>
+
+  <!-- Use the Flyer component -->
+  <Flyer
+    textureUrl="/assets/flyer1.png"
+    :position="{ x: 0, y: 1, z: 0 }"
+    @flyerCreated="addFlyerToPole"
+  />
+  <Flyer
+    textureUrl="/assets/flyer2.jpg"
+    :position="{ x: 0, y: 2, z: 0 }"
+    @flyerCreated="addFlyerToPole"
+    :rotationY="(2 * Math.PI) / 3"
+  />
+  <Flyer
+    textureUrl="/assets/flyer2.jpg"
+    :position="{ x: 0, y: -1, z: 0 }"
+    :rotationY="Math.PI"
+    @flyerCreated="addFlyerToPole"
+  />
+  <Flyer
+    textureUrl="/assets/flyer1.png"
+    :position="{ x: 0, y: -3, z: 0 }"
+    :rotationY="Math.PI / 2"
+    @flyerCreated="addFlyerToPole"
+  />
 </template>
 
 <style>
