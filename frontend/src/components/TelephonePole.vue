@@ -14,6 +14,8 @@ let camera: THREE.PerspectiveCamera | null = null;
 const flyerQueue: THREE.Mesh[] = []; // Store flyers temporarily if pole isn't ready
 const rotationProgress = ref(0); // Stores percentage for the progress bar
 
+const commitHash = import.meta.env.VITE_GIT_COMMIT;
+
 const handleScroll = () => {
   if (pole && scrollContainer.value) {
     const scrollY = scrollContainer.value.scrollTop;
@@ -222,6 +224,9 @@ onUnmounted(() => {
     :rotationY="Math.PI / 2"
     @flyerCreated="addFlyerToPole"
   />
+
+  <!-- Commit Hash Display -->
+  <div class="commit-hash">Commit: {{ commitHash }}</div>
 </template>
 
 <style>
@@ -360,5 +365,17 @@ body {
 .icon-button:hover .tooltip {
   opacity: 1;
   transform: translateX(0);
+}
+
+.commit-hash {
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 12px;
+  z-index: 10;
 }
 </style>

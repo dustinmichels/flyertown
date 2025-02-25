@@ -4,8 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vue-tsc -b && vite build",
+    "dev": "VITE_GIT_COMMIT=$(git rev-parse --short HEAD) vite",
+    "build": "VITE_GIT_COMMIT=$(git rev-parse --short HEAD) vue-tsc -b && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
