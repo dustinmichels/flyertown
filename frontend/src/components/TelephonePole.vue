@@ -3,23 +3,16 @@ import * as THREE from "three";
 import { onUnmounted, ref, watchEffect } from "vue";
 import Flyer from "./Flyer.vue";
 import ProgressBar from "./ProgressBar.vue";
-import VerticalText from "./VerticalText.vue";
+import VerticalTag from "./VerticalTag.vue"; // Import the new component
 
 const container = ref<HTMLDivElement | null>(null);
 const scrollContainer = ref<HTMLDivElement | null>(null);
-const verticalTextRef = ref<InstanceType<typeof VerticalText> | null>(null);
 let pole: THREE.Mesh | null = null;
 let renderer: THREE.WebGLRenderer | null = null;
 let scene: THREE.Scene | null = null;
 let camera: THREE.PerspectiveCamera | null = null;
 const flyerQueue: THREE.Mesh[] = []; // Store flyers temporarily if pole isn't ready
 const rotationProgress = ref(0); // Stores percentage for the progress bar
-
-// Define the interface for what's exposed by VerticalText
-interface VerticalTextExpose {
-  letterGroup: THREE.Group | null;
-  setRotation: (y: number) => void;
-}
 
 const handleScroll = () => {
   if (pole && scrollContainer.value) {
@@ -29,15 +22,6 @@ const handleScroll = () => {
     // Calculate rotation
     const rotation = scrollY * 0.005;
     pole.rotation.y = rotation;
-
-    // Update text rotation to match pole rotation if available using the setRotation method
-    if (verticalTextRef.value) {
-      const textComponent =
-        verticalTextRef.value as unknown as VerticalTextExpose;
-      if (textComponent.setRotation) {
-        textComponent.setRotation(rotation);
-      }
-    }
 
     // Normalize rotation progress (0 to 100%)
     rotationProgress.value = (scrollY / maxScroll) * 100;
@@ -69,13 +53,6 @@ const addFlyerToPole = (flyer: THREE.Mesh) => {
     pole.add(flyer);
   } else {
     flyerQueue.push(flyer);
-  }
-};
-
-// Function to handle adding the vertical text group to the scene
-const addVerticalTextToScene = (textGroup: THREE.Group) => {
-  if (scene) {
-    scene.add(textGroup);
   }
 };
 
@@ -214,19 +191,11 @@ onUnmounted(() => {
   <!-- Using the ProgressBar component -->
   <ProgressBar :progress="rotationProgress" />
 
-  <!-- Using the VerticalText component with ref -->
-  <VerticalText
-    ref="verticalTextRef"
-    text="FLYER TOWN"
-    :position="{ x: -1.5, y: 0, z: 0 }"
-    :letterSize="0.3"
-    :letterSpacing="0.5"
-    frontColor="#62929e"
-    sideColor="#546a7b"
-    :metalness="0.4"
-    :roughness="0.2"
-    :depth="0.1"
-    @textCreated="addVerticalTextToScene"
+  <!-- New VerticalTag component - replaces the 3D one -->
+  <VerticalTag
+    text="FLYER  TOWN"
+    backgroundColor="rgba(240, 240, 240, 0.8)"
+    textColor="#546a7b"
   />
 
   <!-- Use the Flyer component -->
