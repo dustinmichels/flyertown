@@ -1,47 +1,47 @@
 <script setup lang="ts">
-import { watch } from "vue";
+import { watch } from 'vue'
 
 // Props for the modal component
 const props = defineProps<{
-  show: boolean;
-  imageUrl: string;
-  title: string;
-  description: string;
-}>();
+  show: boolean
+  imageUrl: string
+  title: string
+  description: string
+}>()
 
 // Emit events to control modal
-const emit = defineEmits(["close"]);
+const emit = defineEmits(['close'])
 
 // Handle ESC key to close modal
 const handleKeyDown = (e: KeyboardEvent) => {
-  if (e.key === "Escape") {
-    emit("close");
+  if (e.key === 'Escape') {
+    emit('close')
   }
-};
+}
 
 // Add and remove event listeners
 watch(
   () => props.show,
   (newVal) => {
     if (newVal) {
-      document.addEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "hidden"; // Prevent scrolling while modal is open
+      document.addEventListener('keydown', handleKeyDown)
+      document.body.style.overflow = 'hidden' // Prevent scrolling while modal is open
     } else {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = ""; // Restore scrolling
+      document.removeEventListener('keydown', handleKeyDown)
+      document.body.style.overflow = '' // Restore scrolling
     }
   }
-);
+)
 
 // Close on overlay click
 const closeModal = () => {
-  emit("close");
-};
+  emit('close')
+}
 
 // Prevent modal content clicks from closing the modal
 const preventClose = (e: Event) => {
-  e.stopPropagation();
-};
+  e.stopPropagation()
+}
 </script>
 
 <template>
@@ -49,9 +49,7 @@ const preventClose = (e: Event) => {
     <transition name="modal-fade">
       <div v-if="show" class="modal-overlay" @click="closeModal">
         <div class="modal-container" @click="preventClose">
-          <button class="modal-close" @click="closeModal" aria-label="Close">
-            ×
-          </button>
+          <button class="modal-close" @click="closeModal" aria-label="Close">×</button>
           <div class="modal-content">
             <div class="modal-image">
               <img :src="imageUrl" :alt="title" />
@@ -177,7 +175,9 @@ const preventClose = (e: Event) => {
 /* Transition effects */
 .modal-fade-enter-active,
 .modal-fade-leave-active {
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
 }
 
 .modal-fade-enter-from,

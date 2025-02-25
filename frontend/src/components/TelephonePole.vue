@@ -1,161 +1,156 @@
 <script setup lang="ts">
-import * as THREE from "three";
-import { onUnmounted, ref, watchEffect } from "vue";
-import CommitHash from "./CommitHash.vue";
-import Flyer from "./Flyer.vue";
-import ProgressBar from "./ProgressBar.vue";
-import VerticalTag from "./VerticalTag.vue";
+import * as THREE from 'three'
+import { onUnmounted, ref, watchEffect } from 'vue'
+import CommitHash from './CommitHash.vue'
+import Flyer from './Flyer.vue'
+import ProgressBar from './ProgressBar.vue'
+import VerticalTag from './VerticalTag.vue'
 
-const container = ref<HTMLDivElement | null>(null);
-const scrollContainer = ref<HTMLDivElement | null>(null);
-let pole: THREE.Mesh | null = null;
-let renderer: THREE.WebGLRenderer | null = null;
-let scene: THREE.Scene | null = null;
-let camera: THREE.PerspectiveCamera | null = null;
-const flyerQueue: THREE.Mesh[] = []; // Store flyers temporarily if pole isn't ready
-const rotationProgress = ref(0); // Stores percentage for the progress bar
+const container = ref<HTMLDivElement | null>(null)
+const scrollContainer = ref<HTMLDivElement | null>(null)
+let pole: THREE.Mesh | null = null
+let renderer: THREE.WebGLRenderer | null = null
+let scene: THREE.Scene | null = null
+let camera: THREE.PerspectiveCamera | null = null
+const flyerQueue: THREE.Mesh[] = [] // Store flyers temporarily if pole isn't ready
+const rotationProgress = ref(0) // Stores percentage for the progress bar
 
 const handleScroll = () => {
   if (pole && scrollContainer.value) {
-    const scrollY = scrollContainer.value.scrollTop;
-    const maxScroll = scrollContainer.value.scrollHeight - window.innerHeight;
+    const scrollY = scrollContainer.value.scrollTop
+    const maxScroll = scrollContainer.value.scrollHeight - window.innerHeight
 
     // Calculate rotation
-    const rotation = scrollY * 0.005;
-    pole.rotation.y = rotation;
+    const rotation = scrollY * 0.005
+    pole.rotation.y = rotation
 
     // Normalize rotation progress (0 to 100%)
-    rotationProgress.value = (scrollY / maxScroll) * 100;
+    rotationProgress.value = (scrollY / maxScroll) * 100
   }
-};
+}
 
 const onWindowResize = () => {
   if (renderer && camera) {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    camera.aspect = window.innerWidth / window.innerHeight
+    camera.updateProjectionMatrix()
+    renderer.setSize(window.innerWidth, window.innerHeight)
   }
-};
+}
 
 // Ensure queued flyers are added once the pole is ready
 const addQueuedFlyers = () => {
-  if (!pole) return;
+  if (!pole) return
   while (flyerQueue.length > 0) {
-    const flyer = flyerQueue.shift();
+    const flyer = flyerQueue.shift()
     if (flyer) {
-      pole.add(flyer);
+      pole.add(flyer)
     }
   }
-};
+}
 
 // Function to handle adding flyers
 const addFlyerToPole = (flyer: THREE.Mesh) => {
   if (pole) {
-    pole.add(flyer);
+    pole.add(flyer)
   } else {
-    flyerQueue.push(flyer);
+    flyerQueue.push(flyer)
   }
-};
+}
 
 // Handle icon clicks
 const handleIconClick = (iconName: string) => {
-  console.log(`Icon clicked: ${iconName}`);
+  console.log(`Icon clicked: ${iconName}`)
 
   // Implement specific actions for each icon
   switch (iconName) {
-    case "settings":
+    case 'settings':
       // alert("Settings clicked!");
-      break;
-    case "favorites":
+      break
+    case 'favorites':
       // alert("Added to favorites!");
-      break;
-    case "refresh":
-      break;
-    case "upload":
+      break
+    case 'refresh':
+      break
+    case 'upload':
       // Handle upload functionality
       // Could open a file dialog or show an upload interface
-      console.log("Upload functionality triggered");
-      break;
+      console.log('Upload functionality triggered')
+      break
   }
-};
+}
 
 // Watch for Vue refs and setup Three.js scene
 watchEffect(() => {
-  if (!container.value || !scrollContainer.value) return;
+  if (!container.value || !scrollContainer.value) return
 
   // Scene setup
-  scene = new THREE.Scene();
+  scene = new THREE.Scene()
 
-  const bgTextureLoader = new THREE.TextureLoader();
-  const backgroundTexture = bgTextureLoader.load("/assets/background.jpg");
-  scene.background = backgroundTexture;
+  const bgTextureLoader = new THREE.TextureLoader()
+  const backgroundTexture = bgTextureLoader.load('/assets/background.jpg')
+  scene.background = backgroundTexture
 
   // Camera setup
-  camera = new THREE.PerspectiveCamera(
-    45,
-    window.innerWidth / window.innerHeight,
-    0.1,
-    100
-  );
-  camera.position.set(0, 2, 10);
-  camera.lookAt(0, 0, 0);
+  camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100)
+  camera.position.set(0, 2, 10)
+  camera.lookAt(0, 0, 0)
 
   // Renderer setup
-  renderer = new THREE.WebGLRenderer({ antialias: true });
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer = new THREE.WebGLRenderer({ antialias: true })
+  renderer.setSize(window.innerWidth, window.innerHeight)
+  renderer.setPixelRatio(window.devicePixelRatio)
 
   if (container.value) {
-    container.value.appendChild(renderer.domElement);
+    container.value.appendChild(renderer.domElement)
   }
 
   // Load textures
-  const textureLoader = new THREE.TextureLoader();
-  const woodTexture = textureLoader.load("/assets/wood-texture.jpg");
+  const textureLoader = new THREE.TextureLoader()
+  const woodTexture = textureLoader.load('/assets/wood-texture.jpg')
 
   // Create the telephone pole
-  const poleGeometry = new THREE.CylinderGeometry(1, 1, 7.3, 64);
+  const poleGeometry = new THREE.CylinderGeometry(1, 1, 7.3, 64)
   const poleMaterial = new THREE.MeshStandardMaterial({
     map: woodTexture,
     roughness: 0.8,
     metalness: 0.0,
-  });
-  pole = new THREE.Mesh(poleGeometry, poleMaterial);
-  scene.add(pole);
+  })
+  pole = new THREE.Mesh(poleGeometry, poleMaterial)
+  scene.add(pole)
 
   // Now that pole is ready, add any queued flyers
-  addQueuedFlyers();
+  addQueuedFlyers()
 
   // Lights
-  const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
-  scene.add(ambientLight);
-  const pointLight = new THREE.PointLight(0xffffff, 2, 20);
-  pointLight.position.set(5, 5, 5);
-  scene.add(pointLight);
+  const ambientLight = new THREE.AmbientLight(0xffffff, 1.5)
+  scene.add(ambientLight)
+  const pointLight = new THREE.PointLight(0xffffff, 2, 20)
+  pointLight.position.set(5, 5, 5)
+  scene.add(pointLight)
 
   // Animation loop
   const animate = () => {
-    requestAnimationFrame(animate);
+    requestAnimationFrame(animate)
     if (renderer && scene && camera) {
-      renderer.render(scene, camera);
+      renderer.render(scene, camera)
     }
-  };
-  animate();
+  }
+  animate()
 
   // Scroll listener
-  scrollContainer.value.addEventListener("scroll", handleScroll, {
+  scrollContainer.value.addEventListener('scroll', handleScroll, {
     passive: true,
-  });
+  })
 
-  window.addEventListener("resize", onWindowResize);
-});
+  window.addEventListener('resize', onWindowResize)
+})
 
 onUnmounted(() => {
   if (scrollContainer.value) {
-    scrollContainer.value.removeEventListener("scroll", handleScroll);
+    scrollContainer.value.removeEventListener('scroll', handleScroll)
   }
-  window.removeEventListener("resize", onWindowResize);
-});
+  window.removeEventListener('resize', onWindowResize)
+})
 </script>
 
 <template>
@@ -177,15 +172,13 @@ onUnmounted(() => {
           icon === 'settings'
             ? 'gear'
             : icon === 'favorites'
-            ? 'heart'
-            : icon === 'refresh'
-            ? 'arrows-rotate'
-            : 'upload'
+              ? 'heart'
+              : icon === 'refresh'
+                ? 'arrows-rotate'
+                : 'upload'
         }`"
       ></i>
-      <span class="tooltip">{{
-        icon.charAt(0).toUpperCase() + icon.slice(1)
-      }}</span>
+      <span class="tooltip">{{ icon.charAt(0).toUpperCase() + icon.slice(1) }}</span>
     </button>
   </div>
 
@@ -193,11 +186,7 @@ onUnmounted(() => {
   <ProgressBar :progress="rotationProgress" />
 
   <!-- New VerticalTag component - replaces the 3D one -->
-  <VerticalTag
-    text="FLYER  TOWN"
-    backgroundColor="rgba(240, 240, 240, 0.8)"
-    textColor="#546a7b"
-  />
+  <VerticalTag text="FLYER  TOWN" backgroundColor="rgba(240, 240, 240, 0.8)" textColor="#546a7b" />
 
   <!-- Use the Flyer component -->
   <Flyer
@@ -310,7 +299,9 @@ body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: transform 0.2s, background-color 0.2s;
+  transition:
+    transform 0.2s,
+    background-color 0.2s;
   color: #ffffff;
 }
 
@@ -347,7 +338,9 @@ body {
   font-size: 14px;
   opacity: 0;
   transform: translateX(-10px);
-  transition: opacity 0.2s, transform 0.2s;
+  transition:
+    opacity 0.2s,
+    transform 0.2s;
   pointer-events: none;
   white-space: nowrap;
 }

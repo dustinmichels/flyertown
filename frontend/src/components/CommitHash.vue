@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const commitHash = import.meta.env.VITE_GIT_COMMIT || "dev";
+const commitHash = import.meta.env.VITE_GIT_COMMIT || 'dev'
 </script>
 
 <template>

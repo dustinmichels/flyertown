@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import TelephonePole from "./components/TelephonePole.vue";
+import TelephonePole from './components/TelephonePole.vue'
 </script>
 
 <template>

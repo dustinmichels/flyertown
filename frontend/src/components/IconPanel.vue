@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import * as THREE from "three";
-import { onMounted, ref } from "vue";
+import * as THREE from 'three'
+import { onMounted, ref } from 'vue'
 
 // Props for positioning and customization
 const props = defineProps({
@@ -9,126 +9,119 @@ const props = defineProps({
     default: () => ({ x: 1.5, y: 0, z: 0 }),
   },
   scale: { type: Number, default: 0.5 },
-  color: { type: String, default: "#ffffff" },
-  hoverColor: { type: String, default: "#ff4500" },
-});
+  color: { type: String, default: '#ffffff' },
+  hoverColor: { type: String, default: '#ff4500' },
+})
 
-const emit = defineEmits(["iconClicked"]);
+const emit = defineEmits(['iconClicked'])
 
 // HTML overlay element reference
-const overlayContainer = ref<HTMLDivElement | null>(null);
+const overlayContainer = ref<HTMLDivElement | null>(null)
 
 // State for hover effects
-const hoveredIcon = ref<string | null>(null);
+const hoveredIcon = ref<string | null>(null)
 
 // Add responsive state to detect mobile
-const isMobile = ref(false);
+const isMobile = ref(false)
 
 // Icons to display
 const icons = [
-  { name: "settings", icon: "gear", tooltip: "Settings" },
-  { name: "favorites", icon: "heart", tooltip: "Favorites" },
-  { name: "upload", icon: "upload", tooltip: "Upload" },
-  { name: "refresh", icon: "arrows-rotate", tooltip: "Refresh" },
-];
+  { name: 'settings', icon: 'gear', tooltip: 'Settings' },
+  { name: 'favorites', icon: 'heart', tooltip: 'Favorites' },
+  { name: 'upload', icon: 'upload', tooltip: 'Upload' },
+  { name: 'refresh', icon: 'arrows-rotate', tooltip: 'Refresh' },
+]
 
 // Handle icon click
 const handleIconClick = (iconName: string) => {
-  emit("iconClicked", iconName);
+  emit('iconClicked', iconName)
   // On mobile, clear any hover state after click
   if (isMobile.value) {
-    hoveredIcon.value = null;
+    hoveredIcon.value = null
   }
-};
+}
 
 // Handle hover only if not mobile
 const handleHover = (iconName: string) => {
   if (!isMobile.value) {
-    hoveredIcon.value = iconName;
+    hoveredIcon.value = iconName
   }
-};
+}
 
 // Handle mouse leave
 const handleMouseLeave = () => {
-  hoveredIcon.value = null;
-};
+  hoveredIcon.value = null
+}
 
 // Set up the 3D world position to 2D screen position mapping
-let camera: THREE.PerspectiveCamera | null = null;
-let worldPosition: THREE.Vector3 | null = null;
+let camera: THREE.PerspectiveCamera | null = null
+let worldPosition: THREE.Vector3 | null = null
 
 // Function to check if we're on mobile
 const checkMobile = () => {
-  isMobile.value = window.innerWidth < 768;
-};
+  isMobile.value = window.innerWidth < 768
+}
 
 onMounted(() => {
   // Initial check for mobile
-  checkMobile();
+  checkMobile()
 
   // Get the camera from the parent scene
   // This will be set by the parent component that renders this one
   const updateIconPositions = () => {
-    if (!overlayContainer.value || !camera || !worldPosition) return;
+    if (!overlayContainer.value || !camera || !worldPosition) return
 
     // Convert 3D position to screen position
-    const vector = worldPosition.clone();
-    vector.project(camera);
+    const vector = worldPosition.clone()
+    vector.project(camera)
 
     // Convert to CSS coordinates
-    const x = (vector.x * 0.5 + 0.5) * window.innerWidth;
-    const y = (-(vector.y - 0.1) * 0.5 + 0.5) * window.innerHeight;
+    const x = (vector.x * 0.5 + 0.5) * window.innerWidth
+    const y = (-(vector.y - 0.1) * 0.5 + 0.5) * window.innerHeight
 
     // Update overlay position
-    overlayContainer.value.style.transform = `translate(-50%, -50%) translate(${x}px, ${y}px)`;
-  };
+    overlayContainer.value.style.transform = `translate(-50%, -50%) translate(${x}px, ${y}px)`
+  }
 
   // Listen for window resize to update positions and check mobile
-  window.addEventListener("resize", () => {
-    updateIconPositions();
-    checkMobile();
-  });
+  window.addEventListener('resize', () => {
+    updateIconPositions()
+    checkMobile()
+  })
 
   // Initial update will be triggered when the parent sets the camera and position
-});
+})
 
 // Method to set the camera and position - will be called by parent
-const setSceneReferences = (
-  cameraRef: THREE.PerspectiveCamera,
-  position: THREE.Vector3
-) => {
-  camera = cameraRef;
-  worldPosition = position;
+const setSceneReferences = (cameraRef: THREE.PerspectiveCamera, position: THREE.Vector3) => {
+  camera = cameraRef
+  worldPosition = position
 
   // Trigger initial position update
   requestAnimationFrame(() => {
     if (overlayContainer.value && camera && worldPosition) {
       // Convert 3D position to screen position
-      const vector = worldPosition.clone();
-      vector.project(camera);
+      const vector = worldPosition.clone()
+      vector.project(camera)
 
       // Convert to CSS coordinates
-      const x = (vector.x * 0.5 + 0.5) * window.innerWidth;
-      const y = (-(vector.y - 0.1) * 0.5 + 0.5) * window.innerHeight;
+      const x = (vector.x * 0.5 + 0.5) * window.innerWidth
+      const y = (-(vector.y - 0.1) * 0.5 + 0.5) * window.innerHeight
 
       // Update overlay position
-      overlayContainer.value.style.transform = `translate(-50%, -50%) translate(${x}px, ${y}px)`;
+      overlayContainer.value.style.transform = `translate(-50%, -50%) translate(${x}px, ${y}px)`
     }
-  });
-};
+  })
+}
 
 // Expose methods to parent
 defineExpose({
   setSceneReferences,
-});
+})
 </script>
 
 <template>
-  <div
-    ref="overlayContainer"
-    class="icon-panel"
-    :class="{ 'is-mobile': isMobile }"
-  >
+  <div ref="overlayContainer" class="icon-panel" :class="{ 'is-mobile': isMobile }">
     <div
       v-for="(icon, index) in icons"
       :key="icon.name"
@@ -171,7 +164,9 @@ defineExpose({
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: transform 0.2s, background-color 0.2s;
+  transition:
+    transform 0.2s,
+    background-color 0.2s;
   pointer-events: auto;
 }
 
@@ -215,7 +210,9 @@ defineExpose({
   font-size: 14px;
   opacity: 0;
   transform: translateX(-10px);
-  transition: opacity 0.2s, transform 0.2s;
+  transition:
+    opacity 0.2s,
+    transform 0.2s;
   pointer-events: none;
 }
 

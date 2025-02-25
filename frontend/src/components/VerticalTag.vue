@@ -1,15 +1,15 @@
 <script setup lang="ts">
 interface Props {
-  text?: string;
-  backgroundColor?: string;
-  textColor?: string;
+  text?: string
+  backgroundColor?: string
+  textColor?: string
 }
 
 withDefaults(defineProps<Props>(), {
-  text: "Flyer Town",
-  backgroundColor: "rgba(240, 240, 240, 0.8)",
-  textColor: "#546a7b",
-});
+  text: 'Flyer Town',
+  backgroundColor: 'rgba(240, 240, 240, 0.8)',
+  textColor: '#546a7b',
+})
 </script>
 
 <template>
@@ -50,7 +50,9 @@ withDefaults(defineProps<Props>(), {
   justify-content: center;
   pointer-events: auto; /* Enable pointer events */
   cursor: pointer; /* Show pointer cursor on hover */
-  transition: transform 0.3s ease, box-shadow 0.3s ease; /* Add smooth transitions */
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease; /* Add smooth transitions */
   transform: translateX(0); /* Initial position */
 }
 

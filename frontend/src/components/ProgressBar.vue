@@ -1,8 +1,8 @@
 <script setup lang="ts">
 // Define props for the progress bar
 defineProps<{
-  progress: number; // The current progress value (0-100%)
-}>();
+  progress: number // The current progress value (0-100%)
+}>()
 </script>
 
 <template>
