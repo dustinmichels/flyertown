@@ -88,27 +88,12 @@ const handleIconClick = (iconName: string) => {
   // Implement specific actions for each icon
   switch (iconName) {
     case "settings":
-      alert("Settings clicked!");
+      // alert("Settings clicked!");
       break;
     case "favorites":
-      alert("Added to favorites!");
+      // alert("Added to favorites!");
       break;
     case "refresh":
-      // Refresh the scene or reset rotation
-      if (pole) {
-        pole.rotation.y = 0;
-        if (verticalTextRef.value) {
-          const textComponent =
-            verticalTextRef.value as unknown as VerticalTextExpose;
-          if (textComponent.setRotation) {
-            textComponent.setRotation(0);
-          }
-        }
-        // Also reset scroll position
-        if (scrollContainer.value) {
-          scrollContainer.value.scrollTop = 0;
-        }
-      }
       break;
   }
 };
@@ -204,7 +189,6 @@ onUnmounted(() => {
       v-for="(icon, index) in ['settings', 'favorites', 'refresh']"
       :key="icon"
       class="icon-button"
-      :style="{ top: `${index * 80 + 120}px` }"
       @click="handleIconClick(icon)"
     >
       <i
@@ -232,7 +216,7 @@ onUnmounted(() => {
     :position="{ x: -1.5, y: 0, z: 0 }"
     :letterSize="0.3"
     :letterSpacing="0.5"
-    frontColor="#62929E"
+    frontColor="#62929e"
     sideColor="#546a7b"
     :metalness="0.4"
     :roughness="0.2"
@@ -305,14 +289,17 @@ body {
 /* Fixed icon panel styling */
 .fixed-icons {
   position: fixed;
-  top: 0;
-  right: 60px;
+  top: 50%;
+  right: 140px; /* Closer to the pole */
+  transform: translateY(-50%); /* Center vertically */
   z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* Space between icons */
 }
 
 .icon-button {
-  position: absolute;
-  right: 0;
+  position: relative; /* Changed from absolute to relative */
   width: 60px;
   height: 60px;
   background-color: rgba(0, 0, 0, 0.6);
