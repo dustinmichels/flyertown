@@ -1,0 +1,4 @@
+[build]
+command = "VITE_GIT_COMMIT=$(git rev-parse --short HEAD) vite build"
+publish = "dist"
+environment = { NODE_VERSION = "22" }                                # Ensure correct Node.js version

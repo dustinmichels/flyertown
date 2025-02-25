@@ -226,7 +226,7 @@ onUnmounted(() => {
   />
 
   <!-- Commit Hash Display -->
-  <div class="commit-hash">Commit: {{ commitHash }}</div>
+  <div class="commit-hash">v. {{ commitHash }}</div>
 </template>
 
 <style>
@@ -369,13 +369,13 @@ body {
 
 .commit-hash {
   position: fixed;
-  bottom: 10px;
+  top: 10px;
   left: 10px;
   background-color: rgba(0, 0, 0, 0.6);
   color: white;
   padding: 5px 10px;
   border-radius: 5px;
-  font-size: 12px;
-  z-index: 10;
+  font-size: 8px;
+  z-index: 20;
 }
 </style>
