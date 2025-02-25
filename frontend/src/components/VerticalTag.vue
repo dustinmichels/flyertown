@@ -1,14 +1,18 @@
 <script setup lang="ts">
 interface Props {
-  text?: string
+  textFirst?: string
+  textSecond?: string
   backgroundColor?: string
-  textColor?: string
+  textColorFirst?: string
+  textColorSecond?: string
 }
 
 withDefaults(defineProps<Props>(), {
-  text: 'Flyer Town',
+  textFirst: 'Flyer',
+  textSecond: 'Town',
   backgroundColor: 'rgba(240, 240, 240, 0.8)',
-  textColor: '#546a7b',
+  textColorFirst: '#546a7b',
+  textColorSecond: '#2c3e50',
 })
 </script>
 
@@ -18,11 +22,34 @@ withDefaults(defineProps<Props>(), {
       class="tag-content"
       :style="{
         backgroundColor: backgroundColor,
-        color: textColor,
       }"
     >
       <div class="vertical-text">
-        <span v-for="(char, index) in text" :key="index" class="letter">
+        <!-- First word letters -->
+        <span
+          v-for="(char, index) in textFirst"
+          :key="`first-${index}`"
+          class="letter"
+          :style="{ color: textColorFirst }"
+        >
+          {{ char }}
+        </span>
+
+        <!-- Space character if needed -->
+        <span
+          v-if="textFirst.slice(-1) !== ' ' && textSecond.charAt(0) !== ' '"
+          class="letter space"
+        >
+          &nbsp;
+        </span>
+
+        <!-- Second word letters -->
+        <span
+          v-for="(char, index) in textSecond"
+          :key="`second-${index}`"
+          class="letter"
+          :style="{ color: textColorSecond }"
+        >
           {{ char }}
         </span>
       </div>
@@ -74,9 +101,13 @@ withDefaults(defineProps<Props>(), {
 .letter {
   font-size: 1.8rem;
   font-weight: bold;
-  line-height: 1.2;
+  line-height: 1;
   text-transform: uppercase;
-  margin: 0.2rem 0;
+  margin: 0.1rem 0;
+}
+
+.space {
+  margin: 0.2rem 0; /* Slightly larger margin for space */
 }
 
 /* For touch devices and smaller screens */
@@ -87,7 +118,7 @@ withDefaults(defineProps<Props>(), {
 
   .letter {
     font-size: 1.2rem;
-    margin: 0.15rem 0;
+    margin: 0.08rem 0;
   }
 
   .tag-content:hover {
@@ -107,7 +138,7 @@ withDefaults(defineProps<Props>(), {
 
   .letter {
     font-size: 1rem;
-    margin: 0.1rem 0;
+    margin: 0.05rem 0;
   }
 }
 </style>

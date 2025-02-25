@@ -185,8 +185,13 @@ onUnmounted(() => {
   <!-- Using the ProgressBar component -->
   <ProgressBar :progress="rotationProgress" />
 
-  <!-- New VerticalTag component - replaces the 3D one -->
-  <VerticalTag text="FLYER  TOWN" backgroundColor="rgba(240, 240, 240, 0.8)" textColor="#546a7b" />
+  <!-- Text along the left side -->
+  <VerticalTag
+    textFirst="Flyer"
+    textSecond="Town"
+    textColorFirst="#546a7b"
+    textColorSecond="#34414c"
+  />
 
   <!-- Use the Flyer component -->
   <Flyer
@@ -201,13 +206,13 @@ onUnmounted(() => {
     :rotationY="(2 * Math.PI) / 3"
   />
   <Flyer
-    textureUrl="/assets/flyer2.jpg"
+    textureUrl="/assets/poster_k1.jpeg"
     :position="{ x: 0, y: -1, z: 0 }"
     :rotationY="Math.PI"
     @flyerCreated="addFlyerToPole"
   />
   <Flyer
-    textureUrl="/assets/flyer1.png"
+    textureUrl="/assets/poster_k2.jpeg"
     :position="{ x: 0, y: -3, z: 0 }"
     :rotationY="Math.PI / 2"
     @flyerCreated="addFlyerToPole"
