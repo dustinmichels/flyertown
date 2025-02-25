@@ -291,22 +291,45 @@ body {
   z-index: 1;
 }
 
-/* Fixed icon panel styling */
+/* Responsive icon panel styling */
 .fixed-icons {
   position: fixed;
   top: 50%;
-  right: 140px; /* Closer to the pole */
+  right: 20px; /* Smaller value for mobile */
   transform: translateY(-50%); /* Center vertically */
   z-index: 10;
   display: flex;
   flex-direction: column;
-  gap: 20px; /* Space between icons */
+  gap: 15px; /* Slightly smaller gap for mobile */
 }
 
+/* For tablets and larger screens */
+@media screen and (min-width: 768px) {
+  .fixed-icons {
+    right: 40px;
+    gap: 20px;
+  }
+}
+
+/* For desktops and larger screens */
+@media screen and (min-width: 1024px) {
+  .fixed-icons {
+    right: 80px;
+  }
+}
+
+/* For larger desktops */
+@media screen and (min-width: 1440px) {
+  .fixed-icons {
+    right: 140px; /* Original value for very large screens */
+  }
+}
+
+/* Icon button styling with mobile adjustments */
 .icon-button {
-  position: relative; /* Changed from absolute to relative */
-  width: 60px;
-  height: 60px;
+  position: relative;
+  width: 45px;
+  height: 45px;
   background-color: rgba(0, 0, 0, 0.6);
   border-radius: 50%;
   border: none;
@@ -319,8 +342,20 @@ body {
 }
 
 .icon-button i {
-  font-size: 24px;
+  font-size: 18px;
   transition: color 0.2s;
+}
+
+/* Restore icon size for larger screens */
+@media screen and (min-width: 768px) {
+  .icon-button {
+    width: 60px;
+    height: 60px;
+  }
+
+  .icon-button i {
+    font-size: 24px;
+  }
 }
 
 .icon-button:hover {
@@ -342,6 +377,15 @@ body {
   transition: opacity 0.2s, transform 0.2s;
   pointer-events: none;
   white-space: nowrap;
+}
+
+/* Adjust tooltip position for mobile */
+@media screen and (max-width: 767px) {
+  .tooltip {
+    right: 55px;
+    padding: 3px 8px;
+    font-size: 12px;
+  }
 }
 
 .icon-button:hover .tooltip {
