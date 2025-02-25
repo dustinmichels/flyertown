@@ -108,7 +108,7 @@ watchEffect(() => {
   const fontLoader = new FontLoader();
   fontLoader.load("/assets/fonts/helvetiker_regular.typeface.json", (font) => {
     // Create individual letters for vertical stacking
-    const letters = "FLYER  TOWN".split("");
+    const letters = "FLYER TOWN".split("");
     const letterSpacing = 0.5; // Spacing between letters
     const letterGroup = new THREE.Group(); // Group to hold all letters
 
