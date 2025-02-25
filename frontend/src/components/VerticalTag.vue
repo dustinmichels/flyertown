@@ -8,7 +8,7 @@ interface Props {
 }
 
 withDefaults(defineProps<Props>(), {
-  text: "FLYER TOWN",
+  text: "Flyer Town",
   backgroundColor: "rgba(240, 240, 240, 0.8)",
   textColor: "#546a7b",
 });
@@ -60,7 +60,7 @@ withDefaults(defineProps<Props>(), {
 }
 
 .letter {
-  font-size: 1.5rem;
+  font-size: 1.8rem;
   font-weight: bold;
   line-height: 1.2;
   text-transform: uppercase;
