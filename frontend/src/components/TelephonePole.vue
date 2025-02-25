@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import * as THREE from "three";
+import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry.js";
+import { FontLoader } from "three/examples/jsm/loaders/FontLoader.js";
 import { onUnmounted, ref, watchEffect } from "vue";
-import Flyer from "./Flyer.vue"; // Import the Flyer component
+import Flyer from "./Flyer.vue"; // Import Flyer component
 import ProgressBar from "./ProgressBar.vue"; // Import the new ProgressBar component
 
 const container = ref<HTMLDivElement | null>(null);
@@ -42,7 +44,6 @@ const addQueuedFlyers = () => {
     const flyer = flyerQueue.shift();
     if (flyer) {
       pole.add(flyer);
-      console.log("✅ Flyer added from queue:", flyer);
     }
   }
 };
@@ -51,10 +52,8 @@ const addQueuedFlyers = () => {
 const addFlyerToPole = (flyer: THREE.Mesh) => {
   if (pole) {
     pole.add(flyer);
-    console.log("✅ Flyer added to the pole:", flyer);
   } else {
-    console.warn("⚠️ Pole not found yet. Adding flyer to queue.");
-    flyerQueue.push(flyer); // Store flyer temporarily
+    flyerQueue.push(flyer);
   }
 };
 
@@ -62,21 +61,11 @@ const addFlyerToPole = (flyer: THREE.Mesh) => {
 watchEffect(() => {
   if (!container.value || !scrollContainer.value) return;
 
-  console.log("✅ Three.js Initializing...");
-
   // Scene setup
   scene = new THREE.Scene();
-  // scene.background = new THREE.Color(0x222222);
 
   const bgTextureLoader = new THREE.TextureLoader();
-  const backgroundTexture = bgTextureLoader.load(
-    "/assets/background.jpg",
-    () => {
-      console.log("✅ Background image loaded");
-    }
-  );
-
-  // Apply the texture to the scene background
+  const backgroundTexture = bgTextureLoader.load("/assets/background.jpg");
   scene.background = backgroundTexture;
 
   // Camera setup
@@ -96,23 +85,11 @@ watchEffect(() => {
 
   if (container.value) {
     container.value.appendChild(renderer.domElement);
-  } else {
-    console.error("❌ Renderer container not found!");
-    return;
   }
-
-  console.log("✅ Scene, Camera, and Renderer Initialized");
 
   // Load textures
   const textureLoader = new THREE.TextureLoader();
-  textureLoader.setCrossOrigin("anonymous");
-
-  const woodTexture = textureLoader.load(
-    "/assets/wood-texture.jpg",
-    () => console.log("✅ Wood texture loaded"),
-    undefined,
-    (error) => console.error("❌ Error loading wood texture:", error)
-  );
+  const woodTexture = textureLoader.load("/assets/wood-texture.jpg");
 
   // Create the telephone pole
   const poleGeometry = new THREE.CylinderGeometry(1, 1, 7, 64);
@@ -124,10 +101,58 @@ watchEffect(() => {
   pole = new THREE.Mesh(poleGeometry, poleMaterial);
   scene.add(pole);
 
-  console.log("✅ Pole created");
-
   // Now that pole is ready, add any queued flyers
   addQueuedFlyers();
+
+  // 🔥 Add "FlyerTown" Text Along the Left Side of the Pole
+  const fontLoader = new FontLoader();
+  fontLoader.load("/assets/fonts/helvetiker_regular.typeface.json", (font) => {
+    // Create individual letters for vertical stacking
+    const letters = "FLYER  TOWN".split("");
+    const letterSpacing = 0.5; // Spacing between letters
+    const letterGroup = new THREE.Group(); // Group to hold all letters
+
+    letters.forEach((letter, index) => {
+      const textGeometry = new TextGeometry(letter, {
+        font: font,
+        size: 0.3, // Size of each letter
+        depth: 0.1, // Correct parameter name is 'depth', not 'height'
+        curveSegments: 12,
+        bevelEnabled: false,
+      });
+
+      // Center each letter geometry
+      textGeometry.computeBoundingBox();
+      // Safe access to boundingBox properties
+      const boundingBox = textGeometry.boundingBox;
+      if (boundingBox) {
+        const textWidth = boundingBox.max.x - boundingBox.min.x;
+        textGeometry.translate(-textWidth / 2, 0, 0);
+      }
+
+      const textMaterial = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        metalness: 0.4,
+        roughness: 0.2,
+      });
+
+      const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+
+      // Position each letter vertically with spacing
+      textMesh.position.y = -index * letterSpacing;
+
+      // Add to group
+      letterGroup.add(textMesh);
+    });
+
+    // Position the entire text group
+    letterGroup.position.set(-1.5, 3, 0); // Adjust x to move away from pole
+
+    // Add to the scene
+    if (scene) {
+      scene.add(letterGroup);
+    }
+  });
 
   // Lights
   const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
@@ -136,20 +161,14 @@ watchEffect(() => {
   pointLight.position.set(5, 5, 5);
   scene.add(pointLight);
 
-  console.log("✅ Lights added");
-
   // Animation loop
   const animate = () => {
     requestAnimationFrame(animate);
     if (renderer && scene && camera) {
       renderer.render(scene, camera);
-    } else {
-      console.error("❌ Renderer or Camera missing in animation loop!");
     }
   };
   animate();
-
-  console.log("✅ Animation started");
 
   // Scroll listener
   scrollContainer.value.addEventListener("scroll", handleScroll, {
