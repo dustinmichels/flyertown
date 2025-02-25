@@ -2,14 +2,12 @@
 import * as THREE from "three";
 import { onUnmounted, ref, watchEffect } from "vue";
 import Flyer from "./Flyer.vue";
-import IconPanel from "./IconPanel.vue";
 import ProgressBar from "./ProgressBar.vue";
 import VerticalText from "./VerticalText.vue";
 
 const container = ref<HTMLDivElement | null>(null);
 const scrollContainer = ref<HTMLDivElement | null>(null);
 const verticalTextRef = ref<InstanceType<typeof VerticalText> | null>(null);
-const iconPanelRef = ref<InstanceType<typeof IconPanel> | null>(null);
 let pole: THREE.Mesh | null = null;
 let renderer: THREE.WebGLRenderer | null = null;
 let scene: THREE.Scene | null = null;
