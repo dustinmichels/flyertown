@@ -13,8 +13,8 @@ const props = defineProps({
   },
   letterSize: { type: Number, default: 0.3 },
   letterSpacing: { type: Number, default: 0.5 },
-  frontColor: { type: Number, default: 0xffffff },
-  sideColor: { type: Number, default: 0xff9900 },
+  frontColor: { type: String, default: "#ffffff" },
+  sideColor: { type: String, default: "#ff9900" },
   metalness: { type: Number, default: 0.4 },
   roughness: { type: Number, default: 0.2 },
   fontPath: {
@@ -72,13 +72,13 @@ const createVerticalText = () => {
 
       // Create materials for front/back and sides
       const frontMaterial = new THREE.MeshStandardMaterial({
-        color: props.frontColor,
+        color: props.frontColor, // This now accepts a CSS color string
         metalness: props.metalness,
         roughness: props.roughness,
       });
 
       const sideMaterial = new THREE.MeshStandardMaterial({
-        color: props.sideColor,
+        color: props.sideColor, // This now accepts a CSS color string
         metalness: props.metalness,
         roughness: props.roughness,
       });
