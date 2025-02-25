@@ -10,12 +10,21 @@ let renderer: THREE.WebGLRenderer | null = null;
 let scene: THREE.Scene | null = null;
 let camera: THREE.PerspectiveCamera | null = null;
 const flyerQueue: THREE.Mesh[] = []; // Store flyers temporarily if pole isn't ready
+const rotationProgress = ref(0); // Stores percentage for the progress bar
 
 const handleScroll = () => {
   if (pole && scrollContainer.value) {
     const scrollY = scrollContainer.value.scrollTop;
+    const maxScroll = scrollContainer.value.scrollHeight - window.innerHeight;
+
+    // Calculate rotation
     const rotation = scrollY * 0.005;
     pole.rotation.y = rotation;
+
+    // Normalize rotation progress (0 to 100%)
+    rotationProgress.value = (scrollY / maxScroll) * 100;
+
+    console.log("Progress:", rotationProgress.value); // ✅ Debug if it's updating
   }
 };
 
@@ -58,7 +67,18 @@ watchEffect(() => {
 
   // Scene setup
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x222222);
+  // scene.background = new THREE.Color(0x222222);
+
+  const bgTextureLoader = new THREE.TextureLoader();
+  const backgroundTexture = bgTextureLoader.load(
+    "/assets/background.jpg",
+    () => {
+      console.log("✅ Background image loaded");
+    }
+  );
+
+  // Apply the texture to the scene background
+  scene.background = backgroundTexture;
 
   // Camera setup
   camera = new THREE.PerspectiveCamera(
@@ -154,6 +174,11 @@ onUnmounted(() => {
   </div>
   <div ref="container" class="scene-container"></div>
 
+  <!-- Progress Bar UI (Fixed) -->
+  <div class="progress-bar">
+    <div class="progress-fill" :style="{ width: rotationProgress + '%' }"></div>
+  </div>
+
   <!-- Use the Flyer component -->
   <Flyer
     textureUrl="/assets/flyer1.png"
@@ -214,5 +239,23 @@ body {
   height: 100vh;
   background-color: black;
   z-index: 1;
+}
+
+.progress-bar {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  width: 200px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  overflow: hidden;
+  z-index: 100; /* ✅ Ensure it's above the 3D scene */
+}
+
+.progress-fill {
+  height: 100%;
+  background: #4caf50;
+  transition: width 0.1s ease-out;
 }
 </style>
