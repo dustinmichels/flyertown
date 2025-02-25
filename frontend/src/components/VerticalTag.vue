@@ -7,7 +7,7 @@ interface Props {
   textColor?: string;
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   text: "FLYER TOWN",
   backgroundColor: "rgba(240, 240, 240, 0.8)",
   textColor: "#546a7b",
