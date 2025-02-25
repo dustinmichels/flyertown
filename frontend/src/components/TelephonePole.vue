@@ -113,7 +113,7 @@ watchEffect(() => {
   const woodTexture = textureLoader.load("/assets/wood-texture.jpg");
 
   // Create the telephone pole
-  const poleGeometry = new THREE.CylinderGeometry(1, 1, 7, 64);
+  const poleGeometry = new THREE.CylinderGeometry(1, 1, 7.3, 64);
   const poleMaterial = new THREE.MeshStandardMaterial({
     map: woodTexture,
     roughness: 0.8,

@@ -23,7 +23,7 @@ onMounted(() => {
   const flyerGeometry = new THREE.CylinderGeometry(
     1.02, // Slightly larger radius than the pole
     1.02,
-    1.6, // Flyer height
+    1.8, // Adjusted height for Letter ratio
     32,
     1,
     true,

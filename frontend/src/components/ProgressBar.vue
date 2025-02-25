@@ -17,7 +17,7 @@ defineProps<{
 <style scoped>
 .progress-bar {
   position: fixed;
-  bottom: 30px;
+  bottom: 10px;
   left: 50%;
   transform: translateX(-50%);
   width: 200px;
