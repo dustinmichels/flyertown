@@ -2,12 +2,14 @@
 import * as THREE from "three";
 import { onUnmounted, ref, watchEffect } from "vue";
 import Flyer from "./Flyer.vue";
+import IconPanel from "./IconPanel.vue";
 import ProgressBar from "./ProgressBar.vue";
-import VerticalText from "./VerticalText.vue"; // Import the VerticalText component
+import VerticalText from "./VerticalText.vue";
 
 const container = ref<HTMLDivElement | null>(null);
 const scrollContainer = ref<HTMLDivElement | null>(null);
 const verticalTextRef = ref<InstanceType<typeof VerticalText> | null>(null);
+const iconPanelRef = ref<InstanceType<typeof IconPanel> | null>(null);
 let pole: THREE.Mesh | null = null;
 let renderer: THREE.WebGLRenderer | null = null;
 let scene: THREE.Scene | null = null;
@@ -76,6 +78,38 @@ const addFlyerToPole = (flyer: THREE.Mesh) => {
 const addVerticalTextToScene = (textGroup: THREE.Group) => {
   if (scene) {
     scene.add(textGroup);
+  }
+};
+
+// Handle icon clicks
+const handleIconClick = (iconName: string) => {
+  console.log(`Icon clicked: ${iconName}`);
+
+  // Implement specific actions for each icon
+  switch (iconName) {
+    case "settings":
+      alert("Settings clicked!");
+      break;
+    case "favorites":
+      alert("Added to favorites!");
+      break;
+    case "refresh":
+      // Refresh the scene or reset rotation
+      if (pole) {
+        pole.rotation.y = 0;
+        if (verticalTextRef.value) {
+          const textComponent =
+            verticalTextRef.value as unknown as VerticalTextExpose;
+          if (textComponent.setRotation) {
+            textComponent.setRotation(0);
+          }
+        }
+        // Also reset scroll position
+        if (scrollContainer.value) {
+          scrollContainer.value.scrollTop = 0;
+        }
+      }
+      break;
   }
 };
 
@@ -164,6 +198,30 @@ onUnmounted(() => {
   </div>
   <div ref="container" class="scene-container"></div>
 
+  <!-- Fixed icon panel that doesn't rotate -->
+  <div class="fixed-icons">
+    <button
+      v-for="(icon, index) in ['settings', 'favorites', 'refresh']"
+      :key="icon"
+      class="icon-button"
+      :style="{ top: `${index * 80 + 120}px` }"
+      @click="handleIconClick(icon)"
+    >
+      <i
+        :class="`fas fa-${
+          icon === 'settings'
+            ? 'gear'
+            : icon === 'favorites'
+            ? 'heart'
+            : 'arrows-rotate'
+        }`"
+      ></i>
+      <span class="tooltip">{{
+        icon.charAt(0).toUpperCase() + icon.slice(1)
+      }}</span>
+    </button>
+  </div>
+
   <!-- Using the ProgressBar component -->
   <ProgressBar :progress="rotationProgress" />
 
@@ -174,7 +232,7 @@ onUnmounted(() => {
     :position="{ x: -1.5, y: 0, z: 0 }"
     :letterSize="0.3"
     :letterSpacing="0.5"
-    frontColor="#62929e"
+    frontColor="#62929E"
     sideColor="#546a7b"
     :metalness="0.4"
     :roughness="0.2"
@@ -242,5 +300,60 @@ body {
   height: 100vh;
   background-color: black;
   z-index: 1;
+}
+
+/* Fixed icon panel styling */
+.fixed-icons {
+  position: fixed;
+  top: 0;
+  right: 60px;
+  z-index: 10;
+}
+
+.icon-button {
+  position: absolute;
+  right: 0;
+  width: 60px;
+  height: 60px;
+  background-color: rgba(0, 0, 0, 0.6);
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s, background-color 0.2s;
+  color: #ffffff;
+}
+
+.icon-button i {
+  font-size: 24px;
+  transition: color 0.2s;
+}
+
+.icon-button:hover {
+  transform: scale(1.1);
+  background-color: rgba(0, 0, 0, 0.8);
+  color: #ff4500;
+}
+
+.tooltip {
+  position: absolute;
+  right: 70px;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 14px;
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: opacity 0.2s, transform 0.2s;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.icon-button:hover .tooltip {
+  opacity: 1;
+  transform: translateX(0);
 }
 </style>
