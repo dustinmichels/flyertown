@@ -25,6 +25,7 @@ const hoveredIcon = ref<string | null>(null);
 const icons = [
   { name: "settings", icon: "gear", tooltip: "Settings" },
   { name: "favorites", icon: "heart", tooltip: "Favorites" },
+  { name: "upload", icon: "upload", tooltip: "Upload" },
   { name: "refresh", icon: "arrows-rotate", tooltip: "Refresh" },
 ];
 
@@ -103,7 +104,7 @@ defineExpose({
       @mouseover="hoveredIcon = icon.name"
       @mouseleave="hoveredIcon = null"
       :style="{
-        transform: `translateY(${(index - 1) * 70}px)`,
+        transform: `translateY(${(index - 1.5) * 70}px)`,
       }"
     >
       <i
@@ -147,7 +148,7 @@ defineExpose({
 
 .icon-button:hover,
 .icon-button.hovered {
-  transform: scale(1.1) translateY(calc((index - 1) * 70px));
+  transform: scale(1.1) translateY(calc((index - 1.5) * 70px));
   background-color: rgba(0, 0, 0, 0.8);
 }
 

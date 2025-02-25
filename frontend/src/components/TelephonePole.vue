@@ -93,6 +93,11 @@ const handleIconClick = (iconName: string) => {
       break;
     case "refresh":
       break;
+    case "upload":
+      // Handle upload functionality
+      // Could open a file dialog or show an upload interface
+      console.log("Upload functionality triggered");
+      break;
   }
 };
 
@@ -184,7 +189,7 @@ onUnmounted(() => {
   <!-- Fixed icon panel that doesn't rotate -->
   <div class="fixed-icons">
     <button
-      v-for="(icon, index) in ['settings', 'favorites', 'refresh']"
+      v-for="(icon, _) in ['settings', 'favorites', 'upload', 'refresh']"
       :key="icon"
       class="icon-button"
       @click="handleIconClick(icon)"
@@ -195,7 +200,9 @@ onUnmounted(() => {
             ? 'gear'
             : icon === 'favorites'
             ? 'heart'
-            : 'arrows-rotate'
+            : icon === 'refresh'
+            ? 'arrows-rotate'
+            : 'upload'
         }`"
       ></i>
       <span class="tooltip">{{
