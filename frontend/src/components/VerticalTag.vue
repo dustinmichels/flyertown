@@ -42,7 +42,6 @@ withDefaults(defineProps<Props>(), {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  pointer-events: none; /* Allow clicks to pass through */
 }
 
 .tag-content {
@@ -51,6 +50,19 @@ withDefaults(defineProps<Props>(), {
   box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
   display: flex;
   justify-content: center;
+  pointer-events: auto; /* Enable pointer events */
+  cursor: pointer; /* Show pointer cursor on hover */
+  transition: transform 0.3s ease, box-shadow 0.3s ease; /* Add smooth transitions */
+  transform: translateX(0); /* Initial position */
+}
+
+.tag-content:hover {
+  transform: translateX(5px); /* Move 5px to the right on hover */
+  box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.25); /* Enhanced shadow */
+}
+
+.tag-content:active {
+  transform: translateX(8px); /* Move 8px to the right when clicked */
 }
 
 .vertical-text {
@@ -76,6 +88,14 @@ withDefaults(defineProps<Props>(), {
   .letter {
     font-size: 1.2rem;
     margin: 0.15rem 0;
+  }
+
+  .tag-content:hover {
+    transform: translateX(3px); /* Smaller movement for mobile */
+  }
+
+  .tag-content:active {
+    transform: translateX(5px); /* Smaller movement for mobile */
   }
 }
 
