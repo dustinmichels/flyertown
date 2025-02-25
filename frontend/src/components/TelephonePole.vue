@@ -1,19 +1,25 @@
 <script setup lang="ts">
 import * as THREE from "three";
-import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry.js";
-import { FontLoader } from "three/examples/jsm/loaders/FontLoader.js";
 import { onUnmounted, ref, watchEffect } from "vue";
-import Flyer from "./Flyer.vue"; // Import Flyer component
-import ProgressBar from "./ProgressBar.vue"; // Import the new ProgressBar component
+import Flyer from "./Flyer.vue";
+import ProgressBar from "./ProgressBar.vue";
+import VerticalText from "./VerticalText.vue"; // Import the VerticalText component
 
 const container = ref<HTMLDivElement | null>(null);
 const scrollContainer = ref<HTMLDivElement | null>(null);
+const verticalTextRef = ref<InstanceType<typeof VerticalText> | null>(null);
 let pole: THREE.Mesh | null = null;
 let renderer: THREE.WebGLRenderer | null = null;
 let scene: THREE.Scene | null = null;
 let camera: THREE.PerspectiveCamera | null = null;
 const flyerQueue: THREE.Mesh[] = []; // Store flyers temporarily if pole isn't ready
 const rotationProgress = ref(0); // Stores percentage for the progress bar
+
+// Define the interface for what's exposed by VerticalText
+interface VerticalTextExpose {
+  letterGroup: THREE.Group | null;
+  setRotation: (y: number) => void;
+}
 
 const handleScroll = () => {
   if (pole && scrollContainer.value) {
@@ -23,6 +29,15 @@ const handleScroll = () => {
     // Calculate rotation
     const rotation = scrollY * 0.005;
     pole.rotation.y = rotation;
+
+    // Update text rotation to match pole rotation if available using the setRotation method
+    if (verticalTextRef.value) {
+      const textComponent =
+        verticalTextRef.value as unknown as VerticalTextExpose;
+      if (textComponent.setRotation) {
+        textComponent.setRotation(rotation);
+      }
+    }
 
     // Normalize rotation progress (0 to 100%)
     rotationProgress.value = (scrollY / maxScroll) * 100;
@@ -54,6 +69,13 @@ const addFlyerToPole = (flyer: THREE.Mesh) => {
     pole.add(flyer);
   } else {
     flyerQueue.push(flyer);
+  }
+};
+
+// Function to handle adding the vertical text group to the scene
+const addVerticalTextToScene = (textGroup: THREE.Group) => {
+  if (scene) {
+    scene.add(textGroup);
   }
 };
 
@@ -104,56 +126,6 @@ watchEffect(() => {
   // Now that pole is ready, add any queued flyers
   addQueuedFlyers();
 
-  // 🔥 Add "FlyerTown" Text Along the Left Side of the Pole
-  const fontLoader = new FontLoader();
-  fontLoader.load("/assets/fonts/helvetiker_regular.typeface.json", (font) => {
-    // Create individual letters for vertical stacking
-    const letters = "FLYER TOWN".split("");
-    const letterSpacing = 0.5; // Spacing between letters
-    const letterGroup = new THREE.Group(); // Group to hold all letters
-
-    letters.forEach((letter, index) => {
-      const textGeometry = new TextGeometry(letter, {
-        font: font,
-        size: 0.3, // Size of each letter
-        depth: 0.1, // Correct parameter name is 'depth', not 'height'
-        curveSegments: 12,
-        bevelEnabled: false,
-      });
-
-      // Center each letter geometry
-      textGeometry.computeBoundingBox();
-      // Safe access to boundingBox properties
-      const boundingBox = textGeometry.boundingBox;
-      if (boundingBox) {
-        const textWidth = boundingBox.max.x - boundingBox.min.x;
-        textGeometry.translate(-textWidth / 2, 0, 0);
-      }
-
-      const textMaterial = new THREE.MeshStandardMaterial({
-        color: 0xffffff,
-        metalness: 0.4,
-        roughness: 0.2,
-      });
-
-      const textMesh = new THREE.Mesh(textGeometry, textMaterial);
-
-      // Position each letter vertically with spacing
-      textMesh.position.y = -index * letterSpacing;
-
-      // Add to group
-      letterGroup.add(textMesh);
-    });
-
-    // Position the entire text group
-    letterGroup.position.set(-1.5, 3, 0); // Adjust x to move away from pole
-
-    // Add to the scene
-    if (scene) {
-      scene.add(letterGroup);
-    }
-  });
-
   // Lights
   const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
   scene.add(ambientLight);
@@ -192,8 +164,23 @@ onUnmounted(() => {
   </div>
   <div ref="container" class="scene-container"></div>
 
-  <!-- Using the new ProgressBar component -->
+  <!-- Using the ProgressBar component -->
   <ProgressBar :progress="rotationProgress" />
+
+  <!-- Using the VerticalText component with ref -->
+  <VerticalText
+    ref="verticalTextRef"
+    text="FLYER TOWN"
+    :position="{ x: -1.5, y: 0, z: 0 }"
+    :letterSize="0.3"
+    :letterSpacing="0.5"
+    :frontColor="0xffffff"
+    :sideColor="0xff4500"
+    :metalness="0.1"
+    :roughness="0.1"
+    :depth="0.1"
+    @textCreated="addVerticalTextToScene"
+  />
 
   <!-- Use the Flyer component -->
   <Flyer
