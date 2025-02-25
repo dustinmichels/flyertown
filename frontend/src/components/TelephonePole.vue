@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import * as THREE from "three";
 import { onUnmounted, ref, watchEffect } from "vue";
+import CommitHash from "./CommitHash.vue";
 import Flyer from "./Flyer.vue";
 import ProgressBar from "./ProgressBar.vue";
-import VerticalTag from "./VerticalTag.vue"; // Import the new component
+import VerticalTag from "./VerticalTag.vue";
 
 const container = ref<HTMLDivElement | null>(null);
 const scrollContainer = ref<HTMLDivElement | null>(null);
@@ -13,8 +14,6 @@ let scene: THREE.Scene | null = null;
 let camera: THREE.PerspectiveCamera | null = null;
 const flyerQueue: THREE.Mesh[] = []; // Store flyers temporarily if pole isn't ready
 const rotationProgress = ref(0); // Stores percentage for the progress bar
-
-const commitHash = import.meta.env.VITE_GIT_COMMIT;
 
 const handleScroll = () => {
   if (pole && scrollContainer.value) {
@@ -226,7 +225,7 @@ onUnmounted(() => {
   />
 
   <!-- Commit Hash Display -->
-  <div class="commit-hash">v. {{ commitHash }}</div>
+  <CommitHash />
 </template>
 
 <style>
@@ -365,17 +364,5 @@ body {
 .icon-button:hover .tooltip {
   opacity: 1;
   transform: translateX(0);
-}
-
-.commit-hash {
-  position: fixed;
-  top: 10px;
-  left: 10px;
-  background-color: rgba(0, 0, 0, 0.6);
-  color: white;
-  padding: 5px 10px;
-  border-radius: 5px;
-  font-size: 8px;
-  z-index: 20;
 }
 </style>

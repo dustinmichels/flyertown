@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { defineProps } from "vue";
-
 // Define props for the progress bar
 defineProps<{
   progress: number; // The current progress value (0-100%)

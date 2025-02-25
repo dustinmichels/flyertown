@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import * as THREE from "three";
-import { defineEmits, defineProps, onMounted } from "vue";
+import { onMounted } from "vue";
 
 const props = defineProps<{
   textureUrl: string;
