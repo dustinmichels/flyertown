@@ -21,6 +21,9 @@ const overlayContainer = ref<HTMLDivElement | null>(null);
 // State for hover effects
 const hoveredIcon = ref<string | null>(null);
 
+// Add responsive state to detect mobile
+const isMobile = ref(false);
+
 // Icons to display
 const icons = [
   { name: "settings", icon: "gear", tooltip: "Settings" },
@@ -32,13 +35,37 @@ const icons = [
 // Handle icon click
 const handleIconClick = (iconName: string) => {
   emit("iconClicked", iconName);
+  // On mobile, clear any hover state after click
+  if (isMobile.value) {
+    hoveredIcon.value = null;
+  }
+};
+
+// Handle hover only if not mobile
+const handleHover = (iconName: string) => {
+  if (!isMobile.value) {
+    hoveredIcon.value = iconName;
+  }
+};
+
+// Handle mouse leave
+const handleMouseLeave = () => {
+  hoveredIcon.value = null;
 };
 
 // Set up the 3D world position to 2D screen position mapping
 let camera: THREE.PerspectiveCamera | null = null;
 let worldPosition: THREE.Vector3 | null = null;
 
+// Function to check if we're on mobile
+const checkMobile = () => {
+  isMobile.value = window.innerWidth < 768;
+};
+
 onMounted(() => {
+  // Initial check for mobile
+  checkMobile();
+
   // Get the camera from the parent scene
   // This will be set by the parent component that renders this one
   const updateIconPositions = () => {
@@ -56,8 +83,11 @@ onMounted(() => {
     overlayContainer.value.style.transform = `translate(-50%, -50%) translate(${x}px, ${y}px)`;
   };
 
-  // Listen for window resize to update positions
-  window.addEventListener("resize", updateIconPositions);
+  // Listen for window resize to update positions and check mobile
+  window.addEventListener("resize", () => {
+    updateIconPositions();
+    checkMobile();
+  });
 
   // Initial update will be triggered when the parent sets the camera and position
 });
@@ -94,15 +124,19 @@ defineExpose({
 </script>
 
 <template>
-  <div ref="overlayContainer" class="icon-panel">
+  <div
+    ref="overlayContainer"
+    class="icon-panel"
+    :class="{ 'is-mobile': isMobile }"
+  >
     <div
       v-for="(icon, index) in icons"
       :key="icon.name"
       class="icon-button"
       :class="{ hovered: hoveredIcon === icon.name }"
       @click="handleIconClick(icon.name)"
-      @mouseover="hoveredIcon = icon.name"
-      @mouseleave="hoveredIcon = null"
+      @mouseover="handleHover(icon.name)"
+      @mouseleave="handleMouseLeave"
       :style="{
         transform: `translateY(${(index - 1.5) * 70}px)`,
       }"
@@ -146,9 +180,28 @@ defineExpose({
   transition: color 0.2s;
 }
 
-.icon-button:hover,
+/* Apply hover effects only on non-mobile */
+@media (min-width: 768px) {
+  .icon-button:hover,
+  .icon-button.hovered {
+    transform: scale(1.1) translateY(calc((index - 1.5) * 70px));
+    background-color: rgba(0, 0, 0, 0.8);
+  }
+
+  .icon-button:hover .tooltip,
+  .icon-button.hovered .tooltip {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Fix an issue with the transform calculation in the original code */
 .icon-button.hovered {
-  transform: scale(1.1) translateY(calc((index - 1.5) * 70px));
+  transform: scale(1.1);
+}
+
+/* Mobile specific styles */
+.is-mobile .icon-button:active {
   background-color: rgba(0, 0, 0, 0.8);
 }
 
@@ -166,9 +219,8 @@ defineExpose({
   pointer-events: none;
 }
 
-.icon-button:hover .tooltip,
-.icon-button.hovered .tooltip {
-  opacity: 1;
-  transform: translateX(0);
+/* Mobile tooltip adjustments */
+.is-mobile .tooltip {
+  display: none;
 }
 </style>
