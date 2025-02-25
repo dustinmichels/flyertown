@@ -174,9 +174,10 @@ onUnmounted(() => {
   </div>
   <div ref="container" class="scene-container"></div>
 
-  <!-- Progress Bar UI (Fixed) -->
+  <!-- Scroll Progress Indicator -->
   <div class="progress-bar">
-    <div class="progress-fill" :style="{ width: rotationProgress + '%' }"></div>
+    <div class="progress-track"></div>
+    <div class="progress-dot" :style="{ left: rotationProgress + '%' }"></div>
   </div>
 
   <!-- Use the Flyer component -->
@@ -243,19 +244,35 @@ body {
 
 .progress-bar {
   position: fixed;
-  top: 10px;
-  left: 10px;
+  bottom: 30px; /* Moves it below the pole */
+  left: 50%;
+  transform: translateX(-50%); /* Centers it */
   width: 200px;
   height: 8px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
-  overflow: hidden;
-  z-index: 100; /* ✅ Ensure it's above the 3D scene */
+  display: flex;
+  align-items: center;
+  z-index: 100;
 }
 
-.progress-fill {
-  height: 100%;
+.progress-track {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  transform: translateY(-50%);
+}
+
+.progress-dot {
+  position: absolute;
+  top: 50%;
+  width: 12px;
+  height: 12px;
   background: #4caf50;
-  transition: width 0.1s ease-out;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: left 0.1s ease-out;
 }
 </style>
