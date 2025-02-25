@@ -19,7 +19,7 @@ const props = defineProps({
   roughness: { type: Number, default: 0.2 },
   fontPath: {
     type: String,
-    default: "/assets/fonts/helvetiker_regular.typeface.json",
+    default: "/assets/fonts/Acme_Regular.json",
   },
   depth: { type: Number, default: 0.1 },
 });
