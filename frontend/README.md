@@ -1,6 +1,6 @@
 # UEPvents
 
-Vue 3 + TypeScript app (Vite, bun), deployed to Netlify. Styling follows the uep-alumni frontend: Public Sans, the color tokens in `src/style.css`, and the masthead in `src/App.vue`.
+Vue 3 + TypeScript app (Vite, bun), deployed to Netlify and to GitHub Pages. Styling follows the uep-alumni frontend: Public Sans, the color tokens in `src/style.css`, and the masthead in `src/App.vue`.
 
 Events come from the PocketBase `flyers` collection (see `../pocketbase`). Three views:
 
@@ -9,6 +9,14 @@ Events come from the PocketBase `flyers` collection (see `../pocketbase`). Three
 - **List**: one row per event, date down the left, description clamped to two lines.
 
 The PocketBase URL defaults to `http://127.0.0.1:8090`; set `VITE_POCKETBASE_URL` to override it (e.g. in Netlify's build environment).
+
+If PocketBase can't be reached, the app shows a notice and falls back to the sample events in `src/lib/sampleEvents.json` (posters in `public/sample-posters/`), a copy of the PocketBase dev seed. Sample records have `collectionId: 'sample'`.
+
+## GitHub Pages
+
+`.github/workflows/deploy-frontend.yml` builds and deploys on pushes to `main` that touch `frontend/`, or manually. It builds with `--base=/<repo>/`, so public assets referenced from code must be prefixed with `import.meta.env.BASE_URL` (HTML and CSS URLs are rewritten by Vite). Set the repository variable `POCKETBASE_URL` to point it at a real backend; without it the site shows the sample events.
+
+One-time setup: repo Settings → Pages → Source: **GitHub Actions**.
 
 ## Develop
 

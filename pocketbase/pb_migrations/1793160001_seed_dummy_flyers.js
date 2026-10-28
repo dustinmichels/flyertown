@@ -5,6 +5,9 @@
 //
 // Only seeds when PB_SEED_DUMMY=1 (set by `mise run pb`). Elsewhere, e.g. production,
 // it is recorded as applied without inserting anything.
+//
+// frontend/src/lib/sampleEvents.json and frontend/public/sample-posters/ are an export of
+// these records, used when the frontend can't reach PocketBase; re-export after changing them.
 
 const IMPACT = "Impact, 'Arial Narrow', sans-serif"
 const SANS = 'Helvetica, Arial, sans-serif'

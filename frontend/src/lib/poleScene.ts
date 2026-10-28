@@ -49,7 +49,7 @@ export function createPoleScene(container: HTMLElement, flyers: PoleFlyer[]): Po
 
   const render = () => renderer.render(scene, camera)
 
-  const woodTexture = loader.load('/assets/wood-texture.jpg', render)
+  const woodTexture = loader.load(`${import.meta.env.BASE_URL}assets/wood-texture.jpg`, render)
   woodTexture.colorSpace = THREE.SRGBColorSpace
   const pole = new THREE.Mesh(
     new THREE.CylinderGeometry(POLE_RADIUS, POLE_RADIUS, POLE_HEIGHT, 64),

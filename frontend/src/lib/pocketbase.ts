@@ -1,4 +1,6 @@
-const PB_URL: string = import.meta.env.VITE_POCKETBASE_URL ?? 'http://127.0.0.1:8090'
+import sampleEventsJson from './sampleEvents.json'
+
+const PB_URL: string = import.meta.env.VITE_POCKETBASE_URL || 'http://127.0.0.1:8090'
 
 /** A record from the PocketBase `flyers` collection. Unset fields come back as ''. */
 export interface EventRecord {
@@ -30,7 +32,16 @@ export async function fetchEvents(): Promise<EventRecord[]> {
   return body.items
 }
 
+/** `collectionId` of the bundled sample events; their posters live in `public/sample-posters/`. */
+const SAMPLE_COLLECTION = 'sample'
+
+/** Served when PocketBase can't be reached (e.g. the GitHub Pages demo). Same data as the PocketBase dev seed. */
+export const sampleEvents: EventRecord[] = sampleEventsJson
+
 export function posterUrl(event: EventRecord): string | null {
   if (!event.image) return null
+  if (event.collectionId === SAMPLE_COLLECTION) {
+    return `${import.meta.env.BASE_URL}sample-posters/${encodeURIComponent(event.image)}`
+  }
   return `${PB_URL}/api/files/${event.collectionId}/${event.id}/${encodeURIComponent(event.image)}`
 }

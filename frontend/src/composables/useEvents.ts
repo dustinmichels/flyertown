@@ -1,9 +1,10 @@
 import { ref, shallowRef } from 'vue'
-import { fetchEvents, type EventRecord } from '../lib/pocketbase'
+import { fetchEvents, sampleEvents, type EventRecord } from '../lib/pocketbase'
 
 export function useEvents() {
   const events = shallowRef<EventRecord[]>([])
-  const status = ref<'loading' | 'ready' | 'error'>('loading')
+  const status = ref<'loading' | 'ready' | 'sample'>('loading')
+  /** Why PocketBase couldn't be loaded; set when status is 'sample'. */
   const error = ref('')
 
   fetchEvents()
@@ -13,7 +14,8 @@ export function useEvents() {
     })
     .catch((err: unknown) => {
       error.value = err instanceof Error ? err.message : String(err)
-      status.value = 'error'
+      events.value = sampleEvents
+      status.value = 'sample'
     })
 
   return { events, status, error }

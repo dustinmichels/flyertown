@@ -17,12 +17,14 @@ const view = ref<EventsView>('pole')
   <main>
     <ViewToggle v-model="view" class="toggle" />
     <p v-if="status === 'loading'" class="status">Loading events…</p>
-    <p v-else-if="status === 'error'" class="status error" role="alert">
-      Couldn't load events: {{ error }}
-    </p>
-    <PoleView v-else-if="view === 'pole'" :events="events" />
-    <EventCalendar v-else-if="view === 'calendar'" :events="events" />
-    <EventList v-else :events="events" />
+    <template v-else>
+      <p v-if="status === 'sample'" class="status error" role="alert">
+        Couldn't load events ({{ error }}). Showing sample events.
+      </p>
+      <PoleView v-if="view === 'pole'" :events="events" />
+      <EventCalendar v-else-if="view === 'calendar'" :events="events" />
+      <EventList v-else :events="events" />
+    </template>
   </main>
 </template>
 

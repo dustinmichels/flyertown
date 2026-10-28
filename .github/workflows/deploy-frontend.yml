@@ -1,0 +1,49 @@
+name: Deploy frontend to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths: [frontend/**, .github/workflows/deploy-frontend.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.4
+      - id: pages
+        uses: actions/configure-pages@v5
+      - run: bun install --frozen-lockfile
+      # Project pages are served under /<repo>/. Without the repository variable
+      # POCKETBASE_URL the app can't reach a backend and shows the bundled sample events.
+      - run: bun run build --base="${{ steps.pages.outputs.base_path }}/"
+        env:
+          VITE_POCKETBASE_URL: ${{ vars.POCKETBASE_URL }}
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: frontend/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
