@@ -1,63 +1,119 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, useTemplateRef } from 'vue'
-import { flyers } from '../data/flyers'
-import { createPoleScene, type PoleScene } from '../scene/poleScene'
+import { onMounted, onUnmounted, useTemplateRef, watch } from 'vue'
+import { posterUrl, type EventRecord } from '../lib/pocketbase'
+import { createPoleScene, type PoleScene } from '../lib/poleScene'
 
 /** Pole rotation (radians) per pixel scrolled. */
 const ROTATION_PER_PX = 0.005
 
-/** Scroll position as a percentage (0-100). */
-const progress = defineModel<number>('progress', { default: 0 })
+const props = defineProps<{
+  /** Events that have a poster. */
+  events: EventRecord[]
+  selectedId: string | null
+}>()
+
+const emit = defineEmits<{ select: [id: string] }>()
 
 const sceneContainer = useTemplateRef('sceneContainer')
-const scrollContainer = useTemplateRef('scrollContainer')
+const scroller = useTemplateRef('scroller')
 let poleScene: PoleScene | undefined
 
 function onScroll() {
-  const el = scrollContainer.value
-  if (!el || !poleScene) return
-  poleScene.setRotation(el.scrollTop * ROTATION_PER_PX)
-  progress.value = (el.scrollTop / (el.scrollHeight - el.clientHeight)) * 100
+  if (scroller.value) poleScene?.setRotation(scroller.value.scrollTop * ROTATION_PER_PX)
+}
+
+function onClick(e: MouseEvent) {
+  const id = poleScene?.pick(e.clientX, e.clientY)
+  if (id) emit('select', id)
+}
+
+function onPointerMove(e: PointerEvent) {
+  if (!scroller.value || e.pointerType !== 'mouse') return
+  scroller.value.style.cursor = poleScene?.pick(e.clientX, e.clientY) ? 'pointer' : ''
 }
 
 onMounted(() => {
-  if (sceneContainer.value) poleScene = createPoleScene(sceneContainer.value, flyers)
+  if (!sceneContainer.value) return
+  poleScene = createPoleScene(
+    sceneContainer.value,
+    props.events.map((event) => ({ id: event.id, imageUrl: posterUrl(event)! }))
+  )
+  poleScene.setSelected(props.selectedId)
 })
+
+watch(
+  () => props.selectedId,
+  (id) => poleScene?.setSelected(id)
+)
 
 onUnmounted(() => poleScene?.dispose())
 </script>
 
 <template>
-  <!-- Invisible scroller on top of the canvas; scrolling it spins the pole. -->
-  <div ref="scrollContainer" class="scroll-container" @scroll.passive="onScroll">
-    <div class="scroll-content"></div>
+  <div class="stage">
+    <div ref="sceneContainer" class="scene" aria-hidden="true"></div>
+    <!-- Invisible scroller over the canvas: scrolling it spins the pole, clicking picks a flyer. -->
+    <div
+      ref="scroller"
+      class="scroller"
+      aria-hidden="true"
+      @scroll.passive="onScroll"
+      @click="onClick"
+      @pointermove="onPointerMove"
+    >
+      <div class="scroll-content"></div>
+    </div>
+    <!-- The canvas is opaque to assistive tech and keyboards, so offer the flyers as buttons too. -->
+    <ul class="visually-hidden" aria-label="Flyers on the pole">
+      <li v-for="event in events" :key="event.id">
+        <button
+          type="button"
+          :aria-pressed="event.id === selectedId"
+          @click="emit('select', event.id)"
+        >
+          {{ event.title }}
+        </button>
+      </li>
+    </ul>
   </div>
-  <div ref="sceneContainer" class="scene-container"></div>
 </template>
 
 <style scoped>
-.scroll-container {
+.stage {
+  position: relative;
+  aspect-ratio: 1 / 2;
+  max-height: min(80vh, 46rem);
+  overflow: hidden;
+  border-radius: 6px;
+  background: url('/assets/background.jpg') center / cover;
+}
+
+.scene,
+.scroller {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
+  inset: 0;
+}
+
+.scroller {
   overflow-y: scroll;
-  z-index: 2;
-  opacity: 0;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+
+.scroller::-webkit-scrollbar {
+  display: none;
 }
 
 .scroll-content {
   height: 3000px;
 }
 
-.scene-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: black;
-  z-index: 1;
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 </style>

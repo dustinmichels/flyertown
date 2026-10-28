@@ -1,19 +1,14 @@
-# FlyerTown
+# UEPvents
 
-Vue 3 + Three.js app (Vite, bun), deployed to Netlify.
+Vue 3 + TypeScript app (Vite, bun), deployed to Netlify. Styling follows the uep-alumni frontend: Public Sans, the color tokens in `src/style.css`, and the masthead in `src/App.vue`.
 
-## Layout
+Events come from the PocketBase `flyers` collection (see `../pocketbase`). Three views:
 
-```
-src/
-  App.vue              page composition
-  components/          UI overlays + TelephonePole (scroll-driven 3D scene host)
-  scene/poleScene.ts   Three.js scene: pole, flyers, lights, render loop
-  data/flyers.ts       flyer textures and their placement on the pole
-public/assets/         textures loaded at runtime
-```
+- **Calendar** (default): a month grid with each day's events stacked in its cell (multi-day events repeat on every day they cover); prev/next/today buttons change the month, and clicking an event shows its details below. Events without a start date are listed under the grid as "Date TBA". Opens on the month of the next upcoming event. On narrow screens it collapses to an agenda of that month's event days.
+- **List**: one row per event, date down the left, description clamped to two lines.
+- **Telephone pole**: only events with a poster (`image` field), wrapped around a 3D (three.js) pole; scrolling over the pole spins it, and clicking a flyer shows its details to the right.
 
-The commit hash shown in the corner is injected by `vite.config.ts` (`git rev-parse --short HEAD`, falls back to `dev`).
+The PocketBase URL defaults to `http://127.0.0.1:8090`; set `VITE_POCKETBASE_URL` to override it (e.g. in Netlify's build environment).
 
 ## Develop
 

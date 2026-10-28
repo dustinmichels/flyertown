@@ -5,4 +5,14 @@ pocketbase = "0.40.6"
 [tasks.pb]
 description = "Run PocketBase against pocketbase/pb_data"
 dir = "{{config_root}}/pocketbase"
+env = { PB_SEED_DUMMY = "1" }
 run = "pocketbase serve --dir pb_data --publicDir pb_public"
+
+[tasks.fe]
+description = "Run the Vite frontend dev server"
+dir = "{{config_root}}/frontend"
+run = "bun run dev"
+
+[tasks.dev]
+description = "Run PocketBase and the frontend together"
+depends = ["pb", "fe"]
