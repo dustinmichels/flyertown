@@ -1,15 +1,13 @@
 <script setup lang="ts">
-import { defineAsyncComponent, ref } from 'vue'
+import { ref } from 'vue'
 import EventCalendar from './components/EventCalendar.vue'
 import EventList from './components/EventList.vue'
+import PoleView from './components/PoleView.vue'
 import ViewToggle, { type EventsView } from './components/ViewToggle.vue'
 import { useEvents } from './composables/useEvents'
 
-// Pulls in three.js, so only load it when someone opens the pole.
-const PoleView = defineAsyncComponent(() => import('./components/PoleView.vue'))
-
 const { events, status, error } = useEvents()
-const view = ref<EventsView>('calendar')
+const view = ref<EventsView>('pole')
 </script>
 
 <template>
@@ -22,9 +20,9 @@ const view = ref<EventsView>('calendar')
     <p v-else-if="status === 'error'" class="status error" role="alert">
       Couldn't load events: {{ error }}
     </p>
+    <PoleView v-else-if="view === 'pole'" :events="events" />
     <EventCalendar v-else-if="view === 'calendar'" :events="events" />
-    <EventList v-else-if="view === 'list'" :events="events" />
-    <PoleView v-else :events="events" />
+    <EventList v-else :events="events" />
   </main>
 </template>
 
@@ -59,5 +57,15 @@ h1 {
 
 .error {
   color: var(--error);
+}
+
+@media (max-width: 40rem) {
+  .masthead {
+    padding: 1.75rem 0 1.25rem;
+  }
+
+  .toggle {
+    margin-bottom: 1.25rem;
+  }
 }
 </style>

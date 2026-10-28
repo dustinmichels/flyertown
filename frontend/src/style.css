@@ -30,6 +30,12 @@ body {
   padding: 0 1.5rem 4rem;
 }
 
+@media (max-width: 40rem) {
+  #app {
+    padding: 0 1rem 3rem;
+  }
+}
+
 a {
   color: var(--accent);
 }

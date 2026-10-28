@@ -17,9 +17,14 @@ const emit = defineEmits<{ select: [id: string] }>()
 const sceneContainer = useTemplateRef('sceneContainer')
 const scroller = useTemplateRef('scroller')
 let poleScene: PoleScene | undefined
+/** Horizontal scroll the pole starts from (centered on touch screens, so swipes go either way). */
+let startLeft = 0
 
+// Mice and trackpads spin the pole by scrolling vertically. Touch screens swipe sideways instead
+// (see the CSS) so vertical swipes still scroll the page; the pole's front follows the finger.
 function onScroll() {
-  if (scroller.value) poleScene?.setRotation(scroller.value.scrollTop * ROTATION_PER_PX)
+  const el = scroller.value
+  if (el) poleScene?.setRotation((el.scrollTop - (el.scrollLeft - startLeft)) * ROTATION_PER_PX)
 }
 
 function onClick(e: MouseEvent) {
@@ -33,12 +38,14 @@ function onPointerMove(e: PointerEvent) {
 }
 
 onMounted(() => {
-  if (!sceneContainer.value) return
+  if (!sceneContainer.value || !scroller.value) return
   poleScene = createPoleScene(
     sceneContainer.value,
     props.events.map((event) => ({ id: event.id, imageUrl: posterUrl(event)! }))
   )
   poleScene.setSelected(props.selectedId)
+  startLeft = (scroller.value.scrollWidth - scroller.value.clientWidth) / 2
+  scroller.value.scrollLeft = startLeft
 })
 
 watch(
@@ -106,6 +113,28 @@ onUnmounted(() => poleScene?.dispose())
 
 .scroll-content {
   height: 3000px;
+}
+
+@media (pointer: coarse) {
+  .scroller {
+    overflow: scroll hidden;
+    /* Contain sideways overscroll (no back-swipe), but let vertical swipes scroll the page. */
+    overscroll-behavior: contain auto;
+  }
+
+  .scroll-content {
+    width: 3000px;
+    height: 100%;
+  }
+}
+
+/* Narrow screens: the pole spans the width (PoleView stacks the details below it). */
+@media (max-width: 40rem) {
+  .stage {
+    aspect-ratio: auto;
+    height: min(60svh, 32rem);
+    max-height: none;
+  }
 }
 
 .visually-hidden {
