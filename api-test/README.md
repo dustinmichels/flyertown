@@ -1,15 +1,18 @@
 # api-test
 
-To install dependencies:
+Lists records from the local PocketBase `flyers` collection.
 
-```bash
+Create `.env` (Bun loads it automatically):
+
+```sh
+POCKETBASE_EMAIL=...
+POCKETBASE_PASSWORD=...
+# POCKETBASE_URL=http://127.0.0.1:8090  (default)
+```
+
+Run (with `../pocketbase` serving):
+
+```sh
 bun install
+bun run start
 ```
-
-To run:
-
-```bash
-bun run index.ts
-```
-
-This project was created using `bun init` in bun v1.2.3. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.

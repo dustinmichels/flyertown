@@ -1,40 +1,24 @@
-import "dotenv/config"; // Ensure Bun loads the .env file
-import PocketBase from "pocketbase";
+// Bun loads .env automatically.
+import PocketBase from 'pocketbase'
 
-interface RecordItem {
-  id: string;
-  [key: string]: any;
-}
-
-interface RecordList {
-  items: RecordItem[];
-  page: number;
-  perPage: number;
-  totalPages: number;
-  totalItems: number;
-}
+const pb = new PocketBase(process.env.POCKETBASE_URL ?? 'http://127.0.0.1:8090')
 
 async function fetchFlyers(): Promise<void> {
-  const pb = new PocketBase("http://127.0.0.1:8090");
+  const email = process.env.POCKETBASE_EMAIL
+  const password = process.env.POCKETBASE_PASSWORD
+  if (!email || !password) {
+    throw new Error('Set POCKETBASE_EMAIL and POCKETBASE_PASSWORD in .env')
+  }
 
-  try {
-    // Authenticate using environment variables
-    const email = process.env.POCKETBASE_EMAIL as string;
-    const password = process.env.POCKETBASE_PASSWORD as string;
-    await pb.collection("_superusers").authWithPassword(email, password);
+  await pb.collection('_superusers').authWithPassword(email, password)
+  const { items } = await pb.collection('flyers').getList(1, 50)
 
-    const resultList: RecordList = await pb.collection("flyers").getList(1, 50);
-
-    resultList.items.forEach((record) => {
-      const imageUrl = pb.files.getURL(record, record.image);
-      console.log({
-        ...record,
-        imageUrl,
-      });
-    });
-  } catch (error) {
-    console.error("Error fetching records:", error);
+  for (const record of items) {
+    console.log({ ...record, imageUrl: pb.files.getURL(record, record.image) })
   }
 }
 
-fetchFlyers();
+fetchFlyers().catch((error) => {
+  console.error('Error fetching records:', error)
+  process.exitCode = 1
+})

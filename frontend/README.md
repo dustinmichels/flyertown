@@ -1,29 +1,25 @@
 # FlyerTown
 
-## Setup (For Memory)
+Vue 3 + Three.js app (Vite, bun), deployed to Netlify.
+
+## Layout
+
+```
+src/
+  App.vue              page composition
+  components/          UI overlays + TelephonePole (scroll-driven 3D scene host)
+  scene/poleScene.ts   Three.js scene: pole, flyers, lights, render loop
+  data/flyers.ts       flyer textures and their placement on the pole
+public/assets/         textures loaded at runtime
+```
+
+The commit hash shown in the corner is injected by `vite.config.ts` (`git rev-parse --short HEAD`, falls back to `dev`).
+
+## Develop
 
 ```sh
-# Create a Vue 3 project with Vite
-npm create vite@latest flyertown --template vue-ts
-cd flyertown
-
-# Install dependencies
-npm install three @capacitor/core @capacitor/android @capacitor/ios
-
-# Add Capacitor
-npx cap init FlyerTown com.yourcompany.flyertown
-
-# Add Mobile Platforms
-npx cap add android
-npx cap add ios
-
-# Sync Vue App to Mobile
-npm run build
-npx cap sync
-
-# Run on Android
-npx cap open android
-
-# Run on iOS
-npx cap open ios
+bun install
+bun run dev
+bun run build    # type-check + production build into dist/
+bun run format
 ```

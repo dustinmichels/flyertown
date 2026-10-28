@@ -1,4 +1,5 @@
 [build]
-command = "VITE_GIT_COMMIT=$(git rev-parse --short HEAD) vite build"
+# Netlify only auto-detects the legacy bun.lockb, so install from bun.lock explicitly.
+command = "bun install --frozen-lockfile && bun run build"
 publish = "dist"
-environment = { NODE_VERSION = "22" }                                # Ensure correct Node.js version
+environment = { NODE_VERSION = "24", BUN_VERSION = "1.4.4" }

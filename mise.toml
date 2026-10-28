@@ -1,0 +1,8 @@
+[tools]
+bun = "1.4.4"
+pocketbase = "0.40.6"
+
+[tasks.pb]
+description = "Run PocketBase against pocketbase/pb_data"
+dir = "{{config_root}}/pocketbase"
+run = "pocketbase serve --dir pb_data --publicDir pb_public"
